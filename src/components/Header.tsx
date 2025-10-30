@@ -89,6 +89,12 @@ export default function Header() {
           {/* 🔹 Menú central */}
           <Nav className="mx-auto gap-4">
             <Nav.Link
+              href="/"
+              className="text-light fw-semibold nav-premium"
+            >
+              Inicio
+            </Nav.Link>
+            <Nav.Link
               href="/cheques"
               className="text-light fw-semibold nav-premium"
             >
@@ -170,10 +176,13 @@ export default function Header() {
             }
           }
 
+          .nav-premium {
+            transition: all 0.3s ease;
+          }
+
           .nav-premium:hover {
             text-shadow: 0 0 8px rgba(255,255,255,0.7);
             transform: scale(1.05);
-            transition: all 0.3s ease;
           }
 
           .premium-btn {

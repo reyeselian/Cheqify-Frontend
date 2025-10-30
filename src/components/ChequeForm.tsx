@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Modal, Button, Form, Row, Col, Image } from "react-bootstrap";
+import { toast } from "react-toastify";
 import { api } from "../services/api";
 
 interface Props {
@@ -9,7 +10,6 @@ interface Props {
   onSaved: () => void;
 }
 
-// Convierte cualquier fecha a YYYY-MM-DD para el input type="date"
 const formatDateForInput = (date: string | Date | undefined) => {
   if (!date) return "";
   const d = new Date(date);
@@ -35,6 +35,7 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
 
   const [imagen, setImagen] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (cheque) {
@@ -91,6 +92,32 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+
+    // Validar campos requeridos
+    if (!form.numero || !form.banco || !form.beneficiario || !form.monto || !form.fechaCheque) {
+      toast.error("Por favor completa todos los campos requeridos.");
+      setLoading(false);
+      return;
+    }
+
+    // Verificar duplicados
+    try {
+      const checkDuplicate = await api.get("/cheques");
+      const duplicado = checkDuplicate.data.find(
+        (c: any) =>
+          c.numero === form.numero &&
+          (!cheque || c._id !== cheque._id)
+      );
+
+      if (duplicado) {
+        toast.warning("⚠️ Ya existe un cheque con ese número.");
+        setLoading(false);
+        return;
+      }
+    } catch {
+      toast.error("Error verificando número de cheque.");
+    }
 
     const formData = new FormData();
     Object.entries(form).forEach(([key, value]) => {
@@ -98,18 +125,28 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
         formData.append(key, String(value));
     });
 
-    if (imagen) {
-      formData.append("imagen", imagen);
-    }
+    if (imagen) formData.append("imagen", imagen);
 
     try {
       if (cheque) {
         await api.put(`/cheques/${cheque._id}`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
+        toast.success("💾 Cheque actualizado correctamente.", {
+          style: {
+            background: "linear-gradient(135deg, #1f1f1f, #3a3a3a)",
+            color: "#e6e6e6",
+          },
+        });
       } else {
         await api.post("/cheques", formData, {
           headers: { "Content-Type": "multipart/form-data" },
+        });
+        toast.success("✅ Cheque registrado exitosamente.", {
+          style: {
+            background: "linear-gradient(135deg, #1f1f1f, #3a3a3a)",
+            color: "#e6e6e6",
+          },
         });
       }
 
@@ -117,18 +154,22 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
       handleClose();
     } catch (error) {
       console.error("Error guardando cheque:", error);
-      alert("Error al guardar el cheque. Verifica los datos.");
+      toast.error("❌ Error al guardar el cheque.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <Modal show={show} onHide={handleClose} size="lg" centered>
       <Form onSubmit={handleSubmit} className="p-3">
-        <Modal.Header closeButton>
-          <Modal.Title>{cheque ? "Editar Cheque" : "Nuevo Cheque"}</Modal.Title>
+        <Modal.Header closeButton className="bg-dark text-white rounded-top-3">
+          <Modal.Title>
+            {cheque ? "✏️ Editar Cheque" : "➕ Nuevo Cheque"}
+          </Modal.Title>
         </Modal.Header>
 
-        <Modal.Body>
+        <Modal.Body style={{ background: "linear-gradient(145deg, #f8f9fa, #fff)" }}>
           <Row className="mb-3">
             <Col md={3}>
               <Form.Group>
@@ -277,7 +318,12 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
                     alt="Vista previa del cheque"
                     fluid
                     rounded
-                    style={{ maxHeight: "200px", objectFit: "contain" }}
+                    style={{
+                      maxHeight: "220px",
+                      objectFit: "contain",
+                      border: "2px solid #ccc",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                    }}
                   />
                 </div>
               )}
@@ -285,12 +331,38 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
           </Row>
         </Modal.Body>
 
-        <Modal.Footer className="d-flex justify-content-between">
-          <Button variant="outline-secondary" onClick={handleClose}>
+        <Modal.Footer
+          className="d-flex justify-content-between"
+          style={{
+            background: "linear-gradient(135deg, #1a1a1a, #333, #1f1f1f)",
+            borderTop: "1px solid #555",
+          }}
+        >
+          <Button
+            variant="secondary"
+            onClick={handleClose}
+            style={{
+              border: "none",
+              background: "linear-gradient(145deg, #6c757d, #adb5bd)",
+              color: "#fff",
+              fontWeight: "bold",
+            }}
+          >
             Cancelar
           </Button>
-          <Button type="submit" variant="dark">
-            Guardar
+
+          <Button
+            type="submit"
+            disabled={loading}
+            style={{
+              background: "linear-gradient(145deg, #1a1a1a, #3c3c3c)",
+              border: "none",
+              color: "#fff",
+              fontWeight: "bold",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.4)",
+            }}
+          >
+            {loading ? "Guardando..." : "Guardar"}
           </Button>
         </Modal.Footer>
       </Form>
