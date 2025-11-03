@@ -15,7 +15,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
 
 export default function Home() {
-  const { user } = useAuth();
+  useAuth();
 
   const [cheques, setCheques] = useState<any[]>([]);
   const [filteredCheques, setFilteredCheques] = useState<any[]>([]);
