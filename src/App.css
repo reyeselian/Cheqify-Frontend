@@ -1,10 +1,93 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* 🎯 ESTILOS BASE */
+:root {
+  --color-principal: #2b2b2b;
+  --color-texto: #fff;
+  --color-fondo: #101010;
+  --color-card: #1e1e1e;
+  --color-borde: rgba(255, 255, 255, 0.1);
+  --transition: all 0.3s ease;
 }
 
+/* 🌙 TEMA OSCURO */
+.tema-oscuro {
+  --color-texto: #ffffff;
+  --color-fondo: #0d0d0d;
+  --color-card: #1a1a1a;
+  --color-borde: rgba(255, 255, 255, 0.1);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+}
+
+/* ☀️ TEMA CLARO */
+.tema-claro {
+  --color-texto: #111111;
+  --color-fondo: #f4f4f4;
+  --color-card: #ffffff;
+  --color-borde: rgba(0, 0, 0, 0.1);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+}
+
+/* 🪩 TEMA METÁLICO */
+.tema-metalico {
+  --color-texto: #f8f8f8;
+  --color-fondo: linear-gradient(135deg, #2c2c2c, #5c5c5c);
+  --color-card: rgba(255, 255, 255, 0.05);
+  --color-borde: rgba(255, 255, 255, 0.15);
+  background: var(--color-fondo);
+  color: var(--color-texto);
+}
+
+/* 🌈 APLICACIÓN GENERAL */
+body,
+#root {
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  transition: var(--transition);
+  min-height: 100vh;
+}
+
+/* 🧱 Tarjetas y botones */
+.card {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  color: var(--color-texto);
+  transition: var(--transition);
+}
+
+button,
+.btn {
+  background-color: var(--color-principal);
+  border: none;
+  color: #fff;
+  transition: var(--transition);
+}
+
+button:hover,
+.btn:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+/* ✨ Campos de texto */
+input,
+select,
+textarea {
+  background-color: var(--color-card);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  transition: var(--transition);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-principal);
+  box-shadow: 0 0 8px var(--color-principal);
+}
+
+/* 🪄 Logo giratorio (opcional de Vite) */
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -12,10 +95,10 @@
   transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em var(--color-principal));
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em #61dafb);
 }
 
 @keyframes logo-spin {
@@ -33,10 +116,20 @@
   }
 }
 
-.card {
-  padding: 2em;
-}
-
+/* 📦 Tarjeta informativa base */
 .read-the-docs {
   color: #888;
+  transition: color 0.3s ease;
+}
+
+/* 🌟 Scrollbar personalizada */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-principal);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
 }

@@ -8,4 +8,5 @@ export interface User {
   rol?: string; // "admin" o "empleado"
   avatar?: string;
   createdAt?: Date;
+  empresa: string;
 }

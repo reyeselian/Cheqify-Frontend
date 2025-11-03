@@ -9,13 +9,14 @@ import {
   Card,
   Dropdown,
   Modal,
-  Form,
-  InputGroup,
 } from "react-bootstrap";
-import { FaEllipsisV, FaPlus, FaSearch } from "react-icons/fa";
+import { FaEllipsisV, FaPlus } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { useAuth } from "../context/AuthContext";
 
 export default function Home() {
+  const { user } = useAuth();
+
   const [cheques, setCheques] = useState<any[]>([]);
   const [filteredCheques, setFilteredCheques] = useState<any[]>([]);
   const [deletedCheques, setDeletedCheques] = useState<any[]>([]);
@@ -25,65 +26,78 @@ export default function Home() {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState("total");
-  const [search, setSearch] = useState("");
-  const [estadoFiltro, setEstadoFiltro] = useState("todos");
+  const [showDeleted, setShowDeleted] = useState(false);
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [accionSeleccionada, setAccionSeleccionada] = useState<"editar" | "eliminar" | null>(null);
   const [chequeSeleccionado, setChequeSeleccionado] = useState<any>(null);
-  const [showDeleted, setShowDeleted] = useState(false);
 
-  const ADMIN_PASSWORD = "1234";
+  const getToken = () => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser).token : null;
+  };
 
   // 🔹 Cargar cheques activos
-  const fetchCheques = () => {
-    setLoading(true);
-    api
-      .get("/cheques")
-      .then((res) => {
-        setCheques(res.data);
-        setFilteredCheques(res.data);
-        setActiveFilter("total");
-        setShowDeleted(false);
-      })
-      .finally(() => setLoading(false));
+  const fetchCheques = async () => {
+    try {
+      setLoading(true);
+      const token = getToken();
+      const res = await api.get("/cheques", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCheques(res.data);
+      setFilteredCheques(res.data);
+      setActiveFilter("total");
+      setShowDeleted(false);
+    } catch (err) {
+      console.error("Error al obtener cheques:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 🔹 Cargar cheques eliminados
-  const fetchDeletedCheques = () => {
-    setLoading(true);
-    api
-      .get("/cheques/deleted/all")
-      .then((res) => {
-        setDeletedCheques(res.data);
-        setFilteredCheques(res.data);
-        setActiveFilter("eliminados");
-        setShowDeleted(true);
-      })
-      .finally(() => setLoading(false));
+  const fetchDeletedCheques = async () => {
+    try {
+      setLoading(true);
+      const token = getToken();
+      const res = await api.get("/cheques/deleted/all", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setDeletedCheques(res.data);
+      setFilteredCheques(res.data);
+      setShowDeleted(true);
+      setActiveFilter("eliminados");
+    } catch (err) {
+      console.error("Error al cargar cheques eliminados:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchCheques();
   }, []);
 
-  // ✅ Marcar como cobrado (solo si está pendiente)
+  // ✅ Marcar como cobrado
   const marcarCobrado = async (cheque: any) => {
     if (cheque.estado !== "pendiente") {
       toast.info("Solo los cheques pendientes pueden marcarse como cobrado.", {
-        style: { background: "linear-gradient(135deg, #1f1f1f, #3a3a3a)", color: "#e6e6e6" },
+        style: { background: "#2b2b2b", color: "#fff" },
       });
       return;
     }
     try {
-      await api.put(`/cheques/${cheque._id}`, { estado: "cobrado" });
-      setCheques((prev) => prev.map((c) => (c._id === cheque._id ? { ...c, estado: "cobrado" } : c)));
-      setFilteredCheques((prev) =>
-        prev.map((c) => (c._id === cheque._id ? { ...c, estado: "cobrado" } : c))
+      const token = getToken();
+      await api.put(
+        `/cheques/${cheque._id}`,
+        { estado: "cobrado" },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
+      fetchCheques();
       toast.success("💰 Cheque marcado como cobrado.", {
-        style: { background: "linear-gradient(135deg, #1f1f1f, #3a3a3a)", color: "#e6e6e6" },
+        style: { background: "#1f1f1f", color: "#fff" },
       });
     } catch {
       toast.error("Error al actualizar el estado del cheque.");
@@ -96,36 +110,116 @@ export default function Home() {
     setShowModal(true);
   };
 
-  // 🗑️ Eliminar cheque (mover a Eliminados)
+  // 🗑️ Eliminar cheque (SOFT DELETE)
   const handleDelete = async (id: string) => {
-    if (confirm("¿Desea eliminar este cheque?")) {
-      await api.delete(`/cheques/${id}`);
+    const token = getToken();
+    if (confirm("¿Desea mover este cheque a 'Eliminados'?")) {
+      await api.delete(`/cheques/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       fetchCheques();
-      fetchDeletedCheques(); // refrescar eliminados para dashboard
+      fetchDeletedCheques();
       toast.warn("🗑️ Cheque movido a eliminados.", {
-        style: { background: "linear-gradient(135deg, #2b2b2b, #444)" },
+        style: { background: "#333", color: "#fff" },
       });
     }
   };
 
-  // ♻️ Restaurar cheque desde Eliminados
+  // ♻️ Restaurar cheque
   const handleRestore = async (cheque: any) => {
-    await api.put(`/cheques/restore/${cheque._id}`);
+    const token = getToken();
+    await api.put(`/cheques/restore/${cheque._id}`, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     fetchCheques();
     fetchDeletedCheques();
     toast.success("♻️ Cheque restaurado correctamente.", {
-      style: { background: "linear-gradient(135deg, #1f1f1f, #3a3a3a)" },
+      style: { background: "#1f1f1f", color: "#fff" },
     });
   };
 
-  // ❌ Eliminar permanentemente desde Eliminados
+  // ❌ Eliminar permanentemente
   const handlePermanentDelete = async (cheque: any) => {
+    const token = getToken();
     if (confirm("¿Desea eliminar permanentemente este cheque?")) {
-      await api.delete(`/cheques/permanent/${cheque._id}`);
+      await api.delete(`/cheques/permanent/${cheque._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       fetchDeletedCheques();
       toast.error("❌ Cheque eliminado permanentemente.");
     }
   };
+
+  // 🔐 Verificar contraseña
+  const verificarPassword = async () => {
+    try {
+      const token = getToken();
+      if (!token) {
+        toast.error("⚠️ Sesión expirada, vuelve a iniciar sesión.");
+        return;
+      }
+      const res = await api.post(
+        "/auth/verify-password",
+        { password: passwordInput },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.status === 200) {
+        setShowPasswordModal(false);
+        if (accionSeleccionada === "editar") handleEdit(chequeSeleccionado);
+        if (accionSeleccionada === "eliminar") handleDelete(chequeSeleccionado._id);
+        setPasswordInput("");
+        toast.success("🔐 Contraseña verificada correctamente.", {
+          style: { background: "#1f1f1f", color: "#fff" },
+        });
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Contraseña incorrecta");
+    }
+  };
+
+  const handleViewDetails = (cheque: any) => {
+    setSelectedCheque(cheque);
+    setImagePreview(cheque.imagen || null);
+    setShowDetailsModal(true);
+  };
+
+  // 💰 Totales
+  const pendientes = cheques.filter((c) => c.estado === "pendiente");
+  const cobrados = cheques.filter((c) => c.estado === "cobrado");
+  const devueltos = cheques.filter((c) => c.estado === "devuelto");
+  const montoTotal = cheques.reduce((acc, c) => acc + (Number(c.monto) || 0), 0);
+  const montoPendiente = pendientes.reduce((acc, c) => acc + (Number(c.monto) || 0), 0);
+  const montoCobrados = cobrados.reduce((acc, c) => acc + (Number(c.monto) || 0), 0);
+  const montoDevueltos = devueltos.reduce((acc, c) => acc + (Number(c.monto) || 0), 0);
+  const montoEliminados = deletedCheques.reduce((acc, c) => acc + (Number(c.monto) || 0), 0);
+
+  // 🔍 Filtros
+  const handleFilter = async (type: string) => {
+    setActiveFilter(type);
+    setLoading(true);
+    try {
+      if (type === "pendientes") {
+        setFilteredCheques(pendientes);
+        setShowDeleted(false);
+      } else if (type === "cobrados") {
+        setFilteredCheques(cobrados);
+        setShowDeleted(false);
+      } else if (type === "devueltos") {
+        setFilteredCheques(devueltos);
+        setShowDeleted(false);
+      } else if (type === "eliminados") {
+        await fetchDeletedCheques();
+      } else {
+        await fetchCheques();
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (value: number) =>
+    value.toLocaleString("es-DO", { style: "currency", currency: "DOP" });
 
   const getEstadoBadge = (estado: string) => {
     const style: any = {
@@ -136,90 +230,31 @@ export default function Home() {
     return <Badge bg={style[estado]?.bg || "dark"}>{style[estado]?.text || estado}</Badge>;
   };
 
-  const verificarPassword = () => {
-    if (passwordInput === ADMIN_PASSWORD) {
-      setShowPasswordModal(false);
-      if (accionSeleccionada === "editar") handleEdit(chequeSeleccionado);
-      if (accionSeleccionada === "eliminar") handleDelete(chequeSeleccionado._id);
-      setPasswordInput("");
-    } else {
-      toast.error("Contraseña incorrecta.");
-    }
-  };
-
-  const handleViewDetails = (cheque: any) => {
-    setSelectedCheque(cheque);
-    setImagePreview(cheque.imagen || null);
-    setShowDetailsModal(true);
-  };
-
-  // 🔍 Filtro de búsqueda/estado sobre activos
-  useEffect(() => {
-    let result = cheques.filter((c) =>
-      [c.numero, c.banco, c.beneficiario].some((field) =>
-        field?.toString().toLowerCase().includes(search.toLowerCase())
-      )
-    );
-    if (estadoFiltro !== "todos") result = result.filter((c) => c.estado === estadoFiltro);
-    setFilteredCheques(result);
-  }, [search, estadoFiltro, cheques]);
-
-  const formatCurrency = (value: number) =>
-    value.toLocaleString("es-DO", {
-      style: "currency",
-      currency: "DOP",
-      minimumFractionDigits: 2,
-    });
-
-  // Totales (activos)
-  const pendientes = cheques.filter((c) => c.estado === "pendiente");
-  const cobrados = cheques.filter((c) => c.estado === "cobrado");
-  const devueltos = cheques.filter((c) => c.estado === "devuelto");
-  const montoTotal = cheques.reduce((acc, c) => acc + (Number(c.monto) || 0), 0);
-  const montoPendiente = pendientes.reduce((acc, c) => acc + (Number(c.monto) || 0), 0);
-  const montoCobrados = cobrados.reduce((acc, c) => acc + (Number(c.monto) || 0), 0);
-  const montoDevueltos = devueltos.reduce((acc, c) => acc + (Number(c.monto) || 0), 0);
-
-  // Totales (eliminados)
-  const montoEliminados = deletedCheques.reduce((acc, c) => acc + (Number(c.monto) || 0), 0);
-
-  const handleFilter = (type: string) => {
-    setActiveFilter(type);
-    switch (type) {
-      case "pendientes":
-        setFilteredCheques(pendientes);
-        setShowDeleted(false);
-        break;
-      case "cobrados":
-        setFilteredCheques(cobrados);
-        setShowDeleted(false);
-        break;
-      case "devueltos":
-        setFilteredCheques(devueltos);
-        setShowDeleted(false);
-        break;
-      case "eliminados":
-        fetchDeletedCheques(); // esto setea showDeleted(true) internamente
-        break;
-      default:
-        fetchCheques(); // vuelve a activos y showDeleted(false)
-    }
-  };
-
   return (
     <div className="p-3">
       {/* HEADER */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h3 className="fw-bold">Super Colmado Domba</h3>
+        {/* <h3 className="fw-bold">{user?.empresa || "Nombre de la Empresa"}</h3> */}
 
+        {/* 🎨 BOTÓN METÁLICO PREMIUM */}
         <Button
-          size="sm"
-          className="border-0 fw-bold text-white px-4 py-2"
+          size="lg"
+          className="fw-bold text-dark px-5 py-3 border-0"
           style={{
-            background: "linear-gradient(135deg, #1a1a1a, #444, #222)",
-            borderRadius: "10px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+            background: "linear-gradient(145deg, #b3b3b3, #d9d9d9, #a6a6a6)",
+            borderRadius: "12px",
+            boxShadow: "inset 0 1px 2px rgba(255,255,255,0.7), 0 4px 15px rgba(0,0,0,0.3)",
+            textShadow: "0 1px 1px rgba(255,255,255,0.6)",
+            transition: "all 0.3s ease",
           }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.background =
+              "linear-gradient(145deg, #dcdcdc, #f2f2f2, #bfbfbf)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.background =
+              "linear-gradient(145deg, #b3b3b3, #d9d9d9, #a6a6a6)")
+          }
           onClick={() => {
             setSelectedCheque(null);
             setShowModal(true);
@@ -230,29 +265,7 @@ export default function Home() {
         </Button>
       </div>
 
-      {/* BUSCADOR */}
-      <InputGroup className="mb-3">
-        <InputGroup.Text className="bg-dark text-white border-0">
-          <FaSearch />
-        </InputGroup.Text>
-        <Form.Control
-          placeholder="Buscar por número, banco o beneficiario..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <Form.Select
-          value={estadoFiltro}
-          onChange={(e) => setEstadoFiltro(e.target.value)}
-          style={{ maxWidth: "180px" }}
-        >
-          <option value="todos">Todos</option>
-          <option value="pendiente">Pendientes</option>
-          <option value="cobrado">Cobrados</option>
-          <option value="devuelto">Devueltos</option>
-        </Form.Select>
-      </InputGroup>
-
-      {/* DASHBOARD */}
+      {/* 🔹 DASHBOARD */}
       <div className="d-flex flex-wrap justify-content-between gap-3 mb-4">
         {[
           { key: "total", label: "Total", count: cheques.length, amount: montoTotal, color: "primary" },
@@ -270,9 +283,10 @@ export default function Home() {
             style={{
               minWidth: "160px",
               cursor: "pointer",
-              background: activeFilter === item.key
-                ? `linear-gradient(145deg, var(--bs-${item.color}) 10%, #fff)`
-                : "linear-gradient(145deg, #f8f9fa, #ffffff)",
+              background:
+                activeFilter === item.key
+                  ? `linear-gradient(145deg, var(--bs-${item.color}) 10%, #fff)`
+                  : "linear-gradient(145deg, #f8f9fa, #ffffff)",
               transition: "all 0.3s ease",
             }}
           >
@@ -285,7 +299,7 @@ export default function Home() {
         ))}
       </div>
 
-      {/* TABLA */}
+      {/* 🔹 TABLA DE CHEQUES */}
       {loading ? (
         <div className="text-center mt-5">
           <Spinner animation="border" variant="dark" />
@@ -309,7 +323,7 @@ export default function Home() {
               </tr>
             </thead>
             <tbody>
-              {filteredCheques.map((c) => (
+              {(showDeleted ? filteredCheques : filteredCheques.slice(0, 5)).map((c) => (
                 <tr key={c._id}>
                   <td>{c.numero}</td>
                   <td>{c.banco}</td>
@@ -322,7 +336,6 @@ export default function Home() {
                       : "No registrada"}
                   </td>
                   <td className="text-center d-flex justify-content-center align-items-center gap-2">
-                    {/* ✅ Botón verde/gris para marcar cobrado (solo en activos) */}
                     {!showDeleted && (
                       <Button
                         size="sm"
@@ -337,8 +350,6 @@ export default function Home() {
                               ? "linear-gradient(145deg, #198754, #2ecc71)"
                               : "linear-gradient(145deg, #6c757d, #adb5bd)",
                           color: "#fff",
-                          fontWeight: "bold",
-                          transition: "all 0.3s ease",
                         }}
                       >
                         ✓
@@ -363,7 +374,6 @@ export default function Home() {
                         >
                           Ver Detalles
                         </Dropdown.Item>
-
                         {!showDeleted ? (
                           <>
                             <Dropdown.Item
@@ -413,7 +423,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* MODALES */}
+      {/* 🔹 MODALES */}
       <ChequeForm
         show={showModal}
         handleClose={() => setShowModal(false)}
@@ -421,7 +431,6 @@ export default function Home() {
         onSaved={fetchCheques}
       />
 
-      {/* MODAL DETALLES */}
       <Modal show={showDetailsModal} onHide={() => setShowDetailsModal(false)} centered size="lg">
         <Modal.Header closeButton className="bg-dark text-white">
           <Modal.Title>Detalles del Cheque</Modal.Title>
@@ -448,18 +457,26 @@ export default function Home() {
                   <p><strong>No. Cheque:</strong> {selectedCheque.numero}</p>
                   <p><strong>Banco:</strong> {selectedCheque.banco}</p>
                   <p><strong>Beneficiario:</strong> {selectedCheque.beneficiario}</p>
-                  <p><strong>Firmado Por:</strong> {selectedCheque.firmadoPor}</p>
+                  <p><strong>Firmado Por:</strong> {selectedCheque.firmadoPor || "No registrado"}</p>
+                  <p><strong>Notas:</strong> {selectedCheque.notas || "Sin notas"}</p>
                 </div>
                 <div className="col-md-6">
                   <p><strong>Monto:</strong> {formatCurrency(selectedCheque.monto)}</p>
                   <p><strong>Estado:</strong> {selectedCheque.estado}</p>
-                  <p><strong>Fecha Cheque:</strong> {selectedCheque.fechaCheque ? new Date(selectedCheque.fechaCheque).toLocaleDateString() : "No registrada"}</p>
-                  <p><strong>Fecha Depósito:</strong> {selectedCheque.fechaDeposito ? new Date(selectedCheque.fechaDeposito).toLocaleDateString() : "No registrada"}</p>
+                  <p>
+                    <strong>Fecha Cheque:</strong>{" "}
+                    {selectedCheque.fechaCheque
+                      ? new Date(selectedCheque.fechaCheque).toLocaleDateString()
+                      : "No registrada"}
+                  </p>
+                  <p>
+                    <strong>Fecha Depósito:</strong>{" "}
+                    {selectedCheque.fechaDeposito
+                      ? new Date(selectedCheque.fechaDeposito).toLocaleDateString()
+                      : "No registrada"}
+                  </p>
                 </div>
               </div>
-              {selectedCheque.notas && (
-                <p className="mt-3"><strong>Notas:</strong> {selectedCheque.notas}</p>
-              )}
             </>
           )}
         </Modal.Body>
@@ -470,7 +487,6 @@ export default function Home() {
         </Modal.Footer>
       </Modal>
 
-      {/* MODAL CONTRASEÑA */}
       <Modal show={showPasswordModal} onHide={() => setShowPasswordModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Contraseña Administrador</Modal.Title>
