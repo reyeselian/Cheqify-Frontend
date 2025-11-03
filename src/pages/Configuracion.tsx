@@ -5,8 +5,6 @@ import {
   FaPalette,
   FaTable,
   FaLock,
-  FaFileAlt,
-  FaCogs,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 
