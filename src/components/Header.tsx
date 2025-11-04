@@ -9,7 +9,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useConfig } from "../context/ConfigContext";
-import { FaUserCircle, FaSignOutAlt, FaBuilding } from "react-icons/fa";
+import { FaUserCircle, FaSignOutAlt, FaBuilding, FaBars } from "react-icons/fa";
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -18,6 +18,7 @@ export default function Header() {
 
   const [scrollY, setScrollY] = useState(0);
   const [hidden, setHidden] = useState(false);
+  const [expanded, setExpanded] = useState(false); // 🔹 Control del menú móvil
 
   // 🔹 Ocultar el Navbar al hacer scroll hacia abajo
   useEffect(() => {
@@ -47,7 +48,9 @@ export default function Header() {
     <>
       <Navbar
         expand="lg"
+        expanded={expanded}
         fixed="top"
+        onToggle={(val) => setExpanded(val)}
         className="px-3 py-2 shadow-sm"
         style={{
           background: getBackground(),
@@ -58,13 +61,13 @@ export default function Header() {
           zIndex: 1000,
         }}
       >
-        <Container className="d-flex justify-content-between align-items-center">
-          {/* 🌟 LOGO EN TEXTO METÁLICO */}
+        <Container>
+          {/* 🌟 LOGO */}
           <div
             className="cheqify-logo-text"
             onClick={() => navigate("/")}
             style={{
-              fontSize: "2.7rem",
+              fontSize: "2.2rem",
               fontWeight: 800,
               letterSpacing: "0.5px",
               cursor: "pointer",
@@ -74,39 +77,47 @@ export default function Header() {
             Cheqify
           </div>
 
-          {/* 🔹 Menú central */}
-          <Nav className="mx-auto gap-4">
-            <Nav.Link
-              href="/"
-              className="fw-semibold nav-premium"
-              style={{ color: textColor }}
-            >
-              Inicio
-            </Nav.Link>
-            <Nav.Link
-              href="/cheques"
-              className="fw-semibold nav-premium"
-              style={{ color: textColor }}
-            >
-              Cheques
-            </Nav.Link>
-            <Nav.Link
-              href="/reportes"
-              className="fw-semibold nav-premium"
-              style={{ color: textColor }}
-            >
-              Reportes
-            </Nav.Link>
-            {/* <Nav.Link
-              href="/configuracion"
-              className="fw-semibold nav-premium"
-              style={{ color: textColor }}
-            >
-              Configuración
-            </Nav.Link> */}
-          </Nav>
+          {/* 🔹 Botón hamburguesa en móvil */}
+          <Button
+            variant="link"
+            className="d-lg-none text-white fs-3 border-0"
+            onClick={() => setExpanded(!expanded)}
+            aria-label="Toggle menu"
+          >
+            <FaBars />
+          </Button>
 
-          {/* 🔹 Sección derecha (usuario o login) */}
+          {/* 🔹 Menú colapsable */}
+          <Navbar.Collapse
+            id="basic-navbar-nav"
+            className="justify-content-center text-center"
+          >
+            <Nav className="mx-auto gap-3">
+              <Nav.Link
+                href="/"
+                style={{ color: textColor }}
+                className="fw-semibold nav-premium"
+              >
+                Inicio
+              </Nav.Link>
+              <Nav.Link
+                href="/cheques"
+                style={{ color: textColor }}
+                className="fw-semibold nav-premium"
+              >
+                Cheques
+              </Nav.Link>
+              <Nav.Link
+                href="/reportes"
+                style={{ color: textColor }}
+                className="fw-semibold nav-premium"
+              >
+                Reportes
+              </Nav.Link>
+            </Nav>
+          </Navbar.Collapse>
+
+          {/* 🔹 Usuario / Login */}
           <div className="d-flex align-items-center gap-3">
             {!user ? (
               <>
@@ -135,7 +146,7 @@ export default function Header() {
                   className="d-flex align-items-center gap-2 premium-btn"
                 >
                   <FaUserCircle />
-                  {user.empresa}
+                  <span className="d-none d-sm-inline">{user.empresa}</span>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                   <Dropdown.Item disabled>
@@ -160,6 +171,14 @@ export default function Header() {
         </Container>
       </Navbar>
 
+      {/* 🔹 Espaciador dinámico (desplaza el contenido cuando el menú está abierto) */}
+      <div
+        style={{
+          height: expanded ? "260px" : "70px",
+          transition: "height 0.35s ease",
+        }}
+      ></div>
+
       {/* 🌈 Estilos Premium */}
       <style>
         {`
@@ -178,28 +197,6 @@ export default function Header() {
           .cheqify-logo-text:hover {
             transform: scale(1.08);
             text-shadow: 0 0 14px rgba(255,255,255,0.7);
-          }
-
-          /* 🌟 Efecto de flash al pasar el mouse */
-          .cheqify-logo-text::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 50%;
-            height: 100%;
-            background: linear-gradient(
-              120deg,
-              rgba(255,255,255,0) 0%,
-              rgba(255,255,255,0.4) 50%,
-              rgba(255,255,255,0) 100%
-            );
-            transform: skewX(-20deg);
-            transition: left 0.6s ease;
-          }
-
-          .cheqify-logo-text:hover::after {
-            left: 120%;
           }
 
           @keyframes metallicShine {
@@ -241,6 +238,28 @@ export default function Header() {
           .premium-btn-dark:hover {
             background: linear-gradient(145deg, #fff, #ddd);
             box-shadow: 0 0 10px rgba(255,255,255,0.5);
+          }
+
+          /* Menú móvil */
+          @media (max-width: 992px) {
+            .navbar-collapse {
+              background: rgba(0,0,0,0.85);
+              border-radius: 10px;
+              padding: 1rem;
+              margin-top: 0.5rem;
+              animation: slideDown 0.35s ease;
+            }
+
+            @keyframes slideDown {
+              from { opacity: 0; transform: translateY(-10px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+
+            .nav-premium {
+              display: block;
+              padding: 0.5rem 0;
+              color: #fff !important;
+            }
           }
         `}
       </style>
