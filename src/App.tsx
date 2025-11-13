@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { Container } from "react-bootstrap";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 import Header from "./components/Header";
 import Home from "./pages/Home";
 import Reportes from "./pages/Reportes";
@@ -9,8 +10,9 @@ import Cheques from "./pages/Cheques";
 import Configuracion from "./pages/Configuracion";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Welcome from "./pages/Welcome"; // ✅ Nueva pantalla de bienvenida
 import { AuthProvider } from "./context/AuthContext";
-import {ConfigProvider} from "./context/ConfigContext";
+import { ConfigProvider } from "./context/ConfigContext";
 import PrivateRoute from "./routes/PrivateRoute";
 
 export default function App() {
@@ -24,13 +26,16 @@ export default function App() {
           {/* 🔹 Contenedor principal */}
           <Container className="mt-5 pt-4">
             <Routes>
+              {/* 🌟 Nueva ruta de bienvenida pública */}
+              <Route path="/" element={<Welcome />} />
+
               {/* Rutas públicas */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
 
               {/* Rutas protegidas */}
               <Route
-                path="/"
+                path="/home"
                 element={
                   <PrivateRoute>
                     <Home />
