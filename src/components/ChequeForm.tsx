@@ -20,6 +20,9 @@ const formatDateForInput = (date: string | Date | undefined) => {
 };
 
 export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props) {
+  // ✅ Obtener usuario actual desde localStorage
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
   const [form, setForm] = useState({
     numero: "",
     banco: "",
@@ -29,8 +32,10 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
     corbata: 0,
     firmadoPor: "",
     notas: "",
-    fechaCheque: "",
+    // ❌ fechaCheque eliminada del estado (la pone el backend)
     fechaDeposito: "",
+    usuario: user._id || "",
+    company: user.empresa || "",
   });
 
   const [imagen, setImagen] = useState<File | null>(null);
@@ -48,8 +53,10 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
         corbata: cheque.corbata || 0,
         firmadoPor: cheque.firmadoPor || "",
         notas: cheque.notas || "",
-        fechaCheque: formatDateForInput(cheque.fechaCheque || cheque.fechaEmision),
+        // ❌ ya no seteamos fechaCheque, solo fechaDeposito
         fechaDeposito: formatDateForInput(cheque.fechaDeposito),
+        usuario: user._id || "",
+        company: user.company || "",
       });
       setPreview(cheque.imagen || null);
     } else {
@@ -62,8 +69,9 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
         corbata: 0,
         firmadoPor: "",
         notas: "",
-        fechaCheque: "",
         fechaDeposito: "",
+        usuario: user._id || "",
+        company: user.company || "",
       });
       setPreview(null);
       setImagen(null);
@@ -94,14 +102,21 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
     e.preventDefault();
     setLoading(true);
 
-    // Validar campos requeridos
-    if (!form.numero || !form.banco || !form.beneficiario || !form.monto || !form.fechaCheque) {
+    // ✅ Validación básica (fechaCheque ya no es requerida)
+    if (!form.numero || !form.banco || !form.beneficiario || !form.monto) {
       toast.error("Por favor completa todos los campos requeridos.");
       setLoading(false);
       return;
     }
 
-    // Verificar duplicados
+    // ✅ Validar que exista usuario
+    if (!user) {
+      toast.error("Debes iniciar sesión para registrar cheques.");
+      setLoading(false);
+      return;
+    }
+
+    // ✅ Verificar duplicados
     try {
       const checkDuplicate = await api.get("/cheques");
       const duplicado = checkDuplicate.data.find(
@@ -119,11 +134,16 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
       toast.error("Error verificando número de cheque.");
     }
 
+    // ✅ Preparar FormData
     const formData = new FormData();
     Object.entries(form).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== "")
         formData.append(key, String(value));
     });
+
+    // ✅ Asegurarse de incluir usuario y empresa antes del envío
+    formData.set("usuario", user._id);
+    formData.set("company", user.company);
 
     if (imagen) formData.append("imagen", imagen);
 
@@ -250,18 +270,6 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
             </Col>
             <Col md={3}>
               <Form.Group>
-                <Form.Label>Fecha del Cheque</Form.Label>
-                <Form.Control
-                  type="date"
-                  name="fechaCheque"
-                  value={form.fechaCheque}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col md={3}>
-              <Form.Group>
                 <Form.Label>Fecha de Depósito</Form.Label>
                 <Form.Control
                   type="date"
@@ -271,6 +279,14 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
                 />
               </Form.Group>
             </Col>
+            {/* <Col md={3} className="d-flex align-items-end">
+              <div style={{ fontSize: "0.85rem", color: "#555" }}>
+                <strong>Fecha del cheque:</strong>{" "}
+                {cheque
+                  ? formatDateForInput(cheque.fechaCheque || cheque.fechaEmision)
+                  : "Se usará la fecha actual del sistema"}
+              </div>
+            </Col> */}
           </Row>
 
           <Row className="mb-3">
