@@ -5,7 +5,7 @@ import { useAdmin } from "../../context/AdminContext";
 import { toast } from "react-toastify";
 import {
   FaSearch, FaEdit, FaBan, FaCheck, FaTrash,
-  FaChevronLeft, FaChevronRight, FaTimes, FaSave, FaUser,
+  FaChevronLeft, FaChevronRight, FaTimes, FaSave,
 } from "react-icons/fa";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";

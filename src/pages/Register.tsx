@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -302,7 +301,6 @@ const STYLES = `
 `;
 
 const Register: React.FC = () => {
-  const navigate = useNavigate();
 
   const [step, setStep]                       = useState<1 | 2>(1);
   const [plans, setPlans]                     = useState<IPlanAPI[]>([]);

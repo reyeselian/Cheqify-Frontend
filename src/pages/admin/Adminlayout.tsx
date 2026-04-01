@@ -1,10 +1,10 @@
 // src/pages/admin/AdminLayout.tsx
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { useAdmin } from "../../context/AdminContext";
 import {
   FaTachometerAlt, FaUsers, FaCreditCard,
-  FaSignOutAlt, FaShieldAlt, FaBars, FaTimes,
+  FaSignOutAlt, FaShieldAlt, FaBars,
 } from "react-icons/fa";
 
 const FONT = "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap";
