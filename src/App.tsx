@@ -19,6 +19,7 @@ import { ConfigProvider } from "./context/ConfigContext";
 import PrivateRoute from "./routes/PrivateRoute";
 import VerifyEmail from "./pages/Verifyemail";
 
+
 // ── Admin app ─────────────────────────────────────────────────
 import AdminLogin     from "./pages/admin/Adminlogin";
 import AdminLayout    from "./pages/admin/Adminlayout";
@@ -27,6 +28,7 @@ import AdminUsuarios  from "./pages/admin/AdminUsuarios";
 import AdminPlanes    from "./pages/admin/AdminPlanes";
 import { AdminProvider } from "./context/AdminContext";
 import AdminRoute       from "./routes/Adminroute";
+import AdminIngresos from "./pages/admin/Adminingresos";
 
 export default function App() {
   return (
@@ -55,6 +57,7 @@ export default function App() {
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="usuarios"  element={<AdminUsuarios />} />
                 <Route path="planes"    element={<AdminPlanes />} />
+                <Route path="ingresos" element={<AdminIngresos />} />
                 
               </Route>
 

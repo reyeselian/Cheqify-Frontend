@@ -13,6 +13,7 @@ interface User {
   email: string;
   password?: string;
   role?: string; // 👈 agregado para roles futuros
+  customPriceNote?: string | null;
 }
 
 interface UserContextType {

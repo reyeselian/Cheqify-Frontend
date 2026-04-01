@@ -7,7 +7,7 @@ import {
   FaUser, FaEnvelope, FaBuilding, FaShieldAlt, FaCrown,
   FaCheckCircle, FaClock, FaEdit, FaSave, FaTimes,
   FaArrowLeft, FaCalendarAlt, FaLock, FaExclamationTriangle,
-  FaBan, FaHourglassHalf, FaKey, FaRocket,
+  FaBan, FaHourglassHalf, FaKey, FaRocket, FaStar,
 } from "react-icons/fa";
 
 const FONT_LINK = "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap";
@@ -23,7 +23,6 @@ const T = {
   goldLight: "#fef3cd",
   font:      "'Outfit', sans-serif",
   radius:    "20px",
-  shadow:    "0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04)",
   shadowLg:  "0 20px 40px -8px rgba(0,0,0,0.10), 0 8px 16px -4px rgba(0,0,0,0.06)",
 };
 
@@ -71,18 +70,15 @@ export default function MiCuenta() {
     return s ? JSON.parse(s).token : null;
   };
 
-  /* password gate */
   const [showPwGate, setShowPwGate]       = useState(false);
   const [pwGateInput, setPwGateInput]     = useState("");
   const [pwGateLoading, setPwGateLoading] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
-  /* empresa */
   const [editingEmpresa, setEditingEmpresa] = useState(false);
   const [empresaValue, setEmpresaValue]     = useState(user?.empresa || "");
   const [savingEmpresa, setSavingEmpresa]   = useState(false);
 
-  /* password change */
   const [showPwSection, setShowPwSection] = useState(false);
   const [currentPw, setCurrentPw]         = useState("");
   const [newPw, setNewPw]                 = useState("");
@@ -140,12 +136,16 @@ export default function MiCuenta() {
   };
 
   if (!user) return null;
+
   const planCfg        = PLAN_CONFIG[user.plan]     ?? PLAN_CONFIG.trial;
   const statusCfg      = STATUS_CONFIG[user.status] ?? STATUS_CONFIG.trial;
   const isTrialExpired = ["trial_expired", "payment_required", "blocked"].includes(user.status);
   const trialDaysLeft  = user.status === "trial" ? calcTrialDaysLeft(user.registeredAt, user.trialDays) : null;
   const registeredFmt  = new Date(user.registeredAt).toLocaleDateString("es-DO", { year: "numeric", month: "long", day: "numeric" });
   const expiresFmt     = user.planExpiresAt ? new Date(user.planExpiresAt).toLocaleDateString("es-DO", { year: "numeric", month: "long", day: "numeric" }) : null;
+
+  // ── Precio personalizado ──────────────────────────────────
+  const customPriceNote = (user as any).customPriceNote as string | null | undefined;
 
   return (
     <>
@@ -235,7 +235,6 @@ export default function MiCuenta() {
 
             <Divider />
 
-            {/* Correo: solo lectura con badge verificado */}
             <Row label="Correo electrónico" icon={<FaEnvelope />}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
                 <span style={{ color: T.text, fontSize: "0.92rem", fontWeight: 500 }}>{user.email}</span>
@@ -291,6 +290,7 @@ export default function MiCuenta() {
                     </li>
                   ))}
                 </ul>
+
                 {user.plan !== "annual" && (
                   <button onClick={() => navigate("/planes")} style={{
                     background: planCfg.bg, border: `1.5px solid ${planCfg.border}`,
@@ -303,6 +303,20 @@ export default function MiCuenta() {
                   >
                     <FaRocket size={12} />{isTrialExpired ? "Activar Plan Ahora" : "Mejorar Plan →"}
                   </button>
+                )}
+
+                {/* ── Mensaje de precio especial del admin ── */}
+                {customPriceNote && (
+                  <div style={{
+                    marginTop: "0.9rem",
+                    background: "#fffbeb", border: "1px solid #fde68a",
+                    borderRadius: "12px", padding: "10px 14px",
+                    display: "flex", alignItems: "center", gap: "8px",
+                    fontSize: "0.78rem", color: "#92400e", fontWeight: 500,
+                  }}>
+                    <FaStar size={11} style={{ color: "#f59e0b", flexShrink: 0 }} />
+                    {customPriceNote}
+                  </div>
                 )}
               </div>
             </div>
