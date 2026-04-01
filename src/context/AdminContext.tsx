@@ -23,7 +23,7 @@ const AdminContext = createContext<AdminContextType>({} as AdminContextType);
 export const useAdmin = () => useContext(AdminContext);
 
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
-  const [admin, setAdmin]               = useState<AdminUser | null>(null);
+  const [admin, setAdmin]                   = useState<AdminUser | null>(null);
   const [isAdminLoading, setIsAdminLoading] = useState(true);
 
   useEffect(() => {
@@ -31,7 +31,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     if (stored) {
       const parsed: AdminUser = JSON.parse(stored);
       setAdmin(parsed);
-      axios.defaults.headers.common["x-admin-token"] = parsed.token;
+      // ── Restaurar el token en los headers de axios al recargar ──
+      axios.defaults.headers.common["Authorization"] = `Bearer ${parsed.token}`;
     }
     setIsAdminLoading(false);
   }, []);
