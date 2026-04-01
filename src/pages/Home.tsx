@@ -13,6 +13,7 @@ import {
 import { FaEllipsisV, FaPlus } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
+import TrialGuard from "../components/TrialGuard";
 
 export default function Home() {
   useAuth();
@@ -237,32 +238,34 @@ export default function Home() {
         {/* <h3 className="fw-bold">{user?.empresa || "Nombre de la Empresa"}</h3> */}
 
         {/* 🎨 BOTÓN METÁLICO PREMIUM */}
-        <Button
-          size="lg"
-          className="fw-bold text-dark px-5 py-3 border-0"
-          style={{
-            background: "linear-gradient(145deg, #b3b3b3, #d9d9d9, #a6a6a6)",
-            borderRadius: "12px",
-            boxShadow: "inset 0 1px 2px rgba(255,255,255,0.7), 0 4px 15px rgba(0,0,0,0.3)",
-            textShadow: "0 1px 1px rgba(255,255,255,0.6)",
-            transition: "all 0.3s ease",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background =
-              "linear-gradient(145deg, #dcdcdc, #f2f2f2, #bfbfbf)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background =
-              "linear-gradient(145deg, #b3b3b3, #d9d9d9, #a6a6a6)")
-          }
-          onClick={() => {
-            setSelectedCheque(null);
-            setShowModal(true);
-          }}
-        >
-          <FaPlus className="me-2" />
-          Añadir Cheque
-        </Button>
+        <TrialGuard showDisabled>
+          <Button
+            size="lg"
+            className="fw-bold text-dark px-5 py-3 border-0"
+            style={{
+              background: "linear-gradient(145deg, #b3b3b3, #d9d9d9, #a6a6a6)",
+              borderRadius: "12px",
+              boxShadow: "inset 0 1px 2px rgba(255,255,255,0.7), 0 4px 15px rgba(0,0,0,0.3)",
+              textShadow: "0 1px 1px rgba(255,255,255,0.6)",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background =
+                "linear-gradient(145deg, #dcdcdc, #f2f2f2, #bfbfbf)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background =
+                "linear-gradient(145deg, #b3b3b3, #d9d9d9, #a6a6a6)")
+            }
+            onClick={() => {
+              setSelectedCheque(null);
+              setShowModal(true);
+            }}
+          >
+            <FaPlus className="me-2" />
+            Añadir Cheque
+          </Button>
+        </TrialGuard>
       </div>
 
       {/* 🔹 DASHBOARD */}
@@ -512,3 +515,5 @@ export default function Home() {
     </div>
   );
 }
+
+export {};

@@ -1,15 +1,9 @@
 import { useEffect, useState } from "react";
-import {
-  Navbar,
-  Nav,
-  Button,
-  Container,
-  Dropdown,
-} from "react-bootstrap";
+import { Navbar, Nav, Button, Container, Dropdown } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useConfig } from "../context/ConfigContext";
-import { FaUserCircle, FaSignOutAlt, FaBuilding, FaBars } from "react-icons/fa";
+import { FaUserCircle, FaSignOutAlt, FaBuilding, FaBars, FaUserCog } from "react-icons/fa";
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -18,9 +12,8 @@ export default function Header() {
 
   const [scrollY, setScrollY] = useState(0);
   const [hidden, setHidden] = useState(false);
-  const [expanded, setExpanded] = useState(false); // 🔹 Control del menú móvil
+  const [expanded, setExpanded] = useState(false);
 
-  // 🔹 Ocultar el Navbar al hacer scroll hacia abajo
   useEffect(() => {
     const handleScroll = () => {
       setHidden(window.scrollY > scrollY && window.scrollY > 80);
@@ -30,15 +23,11 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [scrollY]);
 
-  // 🎨 Cambiar colores según tema configurado
   const getBackground = () => {
     switch (config.tema) {
-      case "claro":
-        return "linear-gradient(135deg, #fff, #e0e0e0)";
-      case "metalico":
-        return `linear-gradient(135deg, ${config.colorPrincipal}, #888)`;
-      default:
-        return `linear-gradient(135deg, ${config.colorPrincipal}, #111)`;
+      case "claro":    return "linear-gradient(135deg, #fff, #e0e0e0)";
+      case "metalico": return `linear-gradient(135deg, ${config.colorPrincipal}, #888)`;
+      default:         return `linear-gradient(135deg, ${config.colorPrincipal}, #111)`;
     }
   };
 
@@ -62,106 +51,74 @@ export default function Header() {
         }}
       >
         <Container>
-          {/* 🌟 LOGO */}
+          {/* LOGO */}
           <div
             className="cheqify-logo-text"
             onClick={() => navigate("/")}
-            style={{
-              fontSize: "2.2rem",
-              fontWeight: 800,
-              letterSpacing: "0.5px",
-              cursor: "pointer",
-              userSelect: "none",
-            }}
+            style={{ fontSize: "2.2rem", fontWeight: 800, letterSpacing: "0.5px", cursor: "pointer", userSelect: "none" }}
           >
             Cheqify
           </div>
 
-          {/* 🔹 Botón hamburguesa en móvil */}
-          <Button
-            variant="link"
-            className="d-lg-none text-white fs-3 border-0"
-            onClick={() => setExpanded(!expanded)}
-            aria-label="Toggle menu"
-          >
+          {/* Hamburguesa */}
+          <Button variant="link" className="d-lg-none text-white fs-3 border-0" onClick={() => setExpanded(!expanded)}>
             <FaBars />
           </Button>
 
-          {/* 🔹 Menú colapsable */}
-          <Navbar.Collapse
-            id="basic-navbar-nav"
-            className="justify-content-center text-center"
-          >
+          {/* Nav links */}
+          <Navbar.Collapse id="basic-navbar-nav" className="justify-content-center text-center">
             <Nav className="mx-auto gap-3">
-              <Nav.Link
-                href="/"
-                style={{ color: textColor }}
-                className="fw-semibold nav-premium"
-              >
-                Inicio
-              </Nav.Link>
-              <Nav.Link
-                href="/cheques"
-                style={{ color: textColor }}
-                className="fw-semibold nav-premium"
-              >
-                Cheques
-              </Nav.Link>
-              <Nav.Link
-                href="/reportes"
-                style={{ color: textColor }}
-                className="fw-semibold nav-premium"
-              >
-                Reportes
-              </Nav.Link>
+              <Nav.Link href="/"         style={{ color: textColor }} className="fw-semibold nav-premium">Inicio</Nav.Link>
+              <Nav.Link href="/cheques"  style={{ color: textColor }} className="fw-semibold nav-premium">Cheques</Nav.Link>
+              <Nav.Link href="/reportes" style={{ color: textColor }} className="fw-semibold nav-premium">Reportes</Nav.Link>
             </Nav>
           </Navbar.Collapse>
 
-          {/* 🔹 Usuario / Login */}
+          {/* Auth */}
           <div className="d-flex align-items-center gap-3">
             {!user ? (
               <>
-                <Button
-                  variant="outline-light"
-                  size="sm"
-                  className="px-3 premium-btn"
-                  onClick={() => navigate("/login")}
-                >
+                <Button variant="outline-light" size="sm" className="px-3 premium-btn" onClick={() => navigate("/login")}>
                   Iniciar Sesión
                 </Button>
-                <Button
-                  variant="light"
-                  size="sm"
-                  className="px-3 premium-btn-dark"
-                  onClick={() => navigate("/register")}
-                >
+                <Button variant="light" size="sm" className="px-3 premium-btn-dark" onClick={() => navigate("/register")}>
                   Registrarse
                 </Button>
               </>
             ) : (
               <Dropdown align="end">
-                <Dropdown.Toggle
-                  variant="dark"
-                  id="dropdown-user"
-                  className="d-flex align-items-center gap-2 premium-btn"
-                >
+                <Dropdown.Toggle variant="dark" id="dropdown-user" className="d-flex align-items-center gap-2 premium-btn">
                   <FaUserCircle />
                   <span className="d-none d-sm-inline">{user.empresa}</span>
                 </Dropdown.Toggle>
+
                 <Dropdown.Menu>
-                  <Dropdown.Item disabled>
+                  {/* Info — no clickeable */}
+                  <Dropdown.Item disabled className="text-muted small">
                     <FaBuilding className="me-2" />
                     {user.email}
                   </Dropdown.Item>
+
                   <Dropdown.Divider />
+
+                  {/* ✅ Mi Cuenta */}
                   <Dropdown.Item
-                    onClick={() => {
-                      logout();
-                      navigate("/login");
-                    }}
-                    className="text-danger fw-semibold"
+                    onClick={() => navigate("/mi-cuenta")}
+                    className="fw-semibold d-flex align-items-center gap-2"
+                    style={{ color: "#c58b2a" }}
                   >
-                    <FaSignOutAlt className="me-2" />
+                    <FaUserCog />
+                    Mi Cuenta
+                  </Dropdown.Item>
+
+                  <Dropdown.Divider />
+
+                  {/* Cerrar sesión */}
+                  <Dropdown.Item
+                    onClick={() => { logout(); navigate("/login"); }}
+                    className="text-danger fw-semibold d-flex align-items-center gap-2"
+                  >
+                    <FaSignOutAlt />
                     Cerrar sesión
                   </Dropdown.Item>
                 </Dropdown.Menu>
@@ -171,98 +128,45 @@ export default function Header() {
         </Container>
       </Navbar>
 
-      {/* 🔹 Espaciador dinámico (desplaza el contenido cuando el menú está abierto) */}
-      <div
-        style={{
-          height: expanded ? "260px" : "70px",
-          transition: "height 0.35s ease",
-        }}
-      ></div>
+      <div style={{ height: expanded ? "260px" : "70px", transition: "height 0.35s ease" }} />
 
-      {/* 🌈 Estilos Premium */}
-      <style>
-        {`
-          /* ✨ Texto metálico animado */
-          .cheqify-logo-text {
-            background: linear-gradient(90deg, #c58b2a, #27b6b1, #9b9b9b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            animation: metallicShine 3s linear infinite;
-            background-size: 300%;
-            transition: transform 0.4s ease, text-shadow 0.4s ease;
-            position: relative;
+      <style>{`
+        .cheqify-logo-text {
+          background: linear-gradient(90deg, #c58b2a, #27b6b1, #9b9b9b);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: metallicShine 3s linear infinite;
+          background-size: 300%;
+          transition: transform 0.4s ease;
+        }
+        .cheqify-logo-text:hover { transform: scale(1.08); }
+        @keyframes metallicShine {
+          0%   { background-position: 0% 50%; }
+          50%  { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .nav-premium { transition: all 0.3s ease; }
+        .nav-premium:hover { text-shadow: 0 0 8px rgba(255,255,255,0.7); transform: scale(1.05); }
+        .premium-btn {
+          background: linear-gradient(145deg, #444, #222);
+          border: 1px solid #555; color: #fff; transition: all 0.3s ease;
+        }
+        .premium-btn:hover { background: linear-gradient(145deg, #666, #333); box-shadow: 0 0 8px rgba(255,255,255,0.3); }
+        .premium-btn-dark { background: linear-gradient(145deg, #eee, #ccc); border: none; color: #111; font-weight: 600; }
+        .premium-btn-dark:hover { background: linear-gradient(145deg, #fff, #ddd); }
+        @media (max-width: 992px) {
+          .navbar-collapse {
+            background: rgba(0,0,0,0.85); border-radius: 10px;
+            padding: 1rem; margin-top: 0.5rem;
+            animation: slideDown 0.35s ease;
           }
-
-          .cheqify-logo-text:hover {
-            transform: scale(1.08);
-            text-shadow: 0 0 14px rgba(255,255,255,0.7);
+          @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
           }
-
-          @keyframes metallicShine {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-          }
-
-          /* Menú premium */
-          .nav-premium {
-            transition: all 0.3s ease;
-          }
-
-          .nav-premium:hover {
-            text-shadow: 0 0 8px rgba(255,255,255,0.7);
-            transform: scale(1.05);
-          }
-
-          /* Botones premium */
-          .premium-btn {
-            background: linear-gradient(145deg, #444, #222);
-            border: 1px solid #555;
-            color: #fff;
-            transition: all 0.3s ease;
-          }
-
-          .premium-btn:hover {
-            background: linear-gradient(145deg, #666, #333);
-            box-shadow: 0 0 8px rgba(255,255,255,0.3);
-          }
-
-          .premium-btn-dark {
-            background: linear-gradient(145deg, #eee, #ccc);
-            border: none;
-            color: #111;
-            font-weight: 600;
-          }
-
-          .premium-btn-dark:hover {
-            background: linear-gradient(145deg, #fff, #ddd);
-            box-shadow: 0 0 10px rgba(255,255,255,0.5);
-          }
-
-          /* Menú móvil */
-          @media (max-width: 992px) {
-            .navbar-collapse {
-              background: rgba(0,0,0,0.85);
-              border-radius: 10px;
-              padding: 1rem;
-              margin-top: 0.5rem;
-              animation: slideDown 0.35s ease;
-            }
-
-            @keyframes slideDown {
-              from { opacity: 0; transform: translateY(-10px); }
-              to { opacity: 1; transform: translateY(0); }
-            }
-
-            .nav-premium {
-              display: block;
-              padding: 0.5rem 0;
-              color: #fff !important;
-            }
-          }
-        `}
-      </style>
+          .nav-premium { display: block; padding: 0.5rem 0; color: #fff !important; }
+        }
+      `}</style>
     </>
   );
 }
