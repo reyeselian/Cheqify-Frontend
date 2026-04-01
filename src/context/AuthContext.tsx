@@ -1,13 +1,13 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from "react";
 import axios from "axios";
 import { api } from "../services/api";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 /* =========================================================
-   Tipos exactos que devuelve el backend
+   Tipos
 ========================================================= */
-export type PlanType = "trial" | "monthly" | "annual";
+export type PlanType     = "trial" | "monthly" | "annual";
 export type AccountStatus = "trial" | "trial_expired" | "active" | "payment_required" | "blocked";
 
 export interface User {
@@ -19,7 +19,7 @@ export interface User {
   planRef?: string;
   status: AccountStatus;
   trialDays: number;
-  registeredAt: string;      // ISO date string
+  registeredAt: string;
   planExpiresAt: string | null;
 }
 
@@ -34,9 +34,16 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export const useAuth = () => useContext(AuthContext);
 
+/* =========================================================
+   Intervalo de verificación: cada 30 segundos
+========================================================= */
+const STATUS_CHECK_INTERVAL = 30_000;
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const intervalRef     = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  /* ── Restaurar sesión desde localStorage ───────────────── */
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -46,6 +53,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  /* ── Verificación periódica de status ──────────────────── */
+  useEffect(() => {
+    if (!user) {
+      // Si no hay usuario, limpiar intervalo
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      return;
+    }
+
+    const checkStatus = async () => {
+      try {
+        const { data } = await api.get("/auth/me", {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+
+        // Si el status cambió, actualizarlo en memoria
+        if (data.status !== user.status) {
+          if (data.status === "blocked") {
+            // Usuario bloqueado → cerrar sesión inmediatamente
+            logout();
+            return;
+          }
+          updateUser({ status: data.status, planExpiresAt: data.planExpiresAt });
+        }
+      } catch {
+        // Si el token expiró o hay error 401, cerrar sesión
+      }
+    };
+
+    // Verificar inmediatamente y luego cada 30 segundos
+    checkStatus();
+    intervalRef.current = setInterval(checkStatus, STATUS_CHECK_INTERVAL);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [user?.token]);
+
+  /* ── Login ──────────────────────────────────────────────── */
   const login = async (email: string, password: string) => {
     const res = await api.post("/auth/login", { email, password });
     const userData: User = res.data;
@@ -55,6 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(userData);
   };
 
+  /* ── Register ───────────────────────────────────────────── */
   const register = async (email: string, password: string, empresa: string) => {
     const { data } = await axios.post(`${API_URL}/auth/register`, { email, password, empresa });
     setUser(data);
@@ -62,14 +108,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
   };
 
+  /* ── Logout ─────────────────────────────────────────────── */
   const logout = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
     setUser(null);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     delete axios.defaults.headers.common["Authorization"];
   };
 
-  /** Actualiza campos del usuario en memoria y localStorage sin recargar la página */
+  /* ── Update user ────────────────────────────────────────── */
   const updateUser = (updates: Partial<User>) => {
     setUser((prev) => {
       if (!prev) return prev;
