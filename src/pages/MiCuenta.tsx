@@ -10,7 +10,7 @@ import {
   FaBan, FaHourglassHalf, FaKey, FaRocket, FaStar,
 } from "react-icons/fa";
 
-const FONT_LINK = "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap";
+const FONT_LINK = "https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap";
 
 const T = {
   bg:        "#f0f2f5",
@@ -21,7 +21,7 @@ const T = {
   faint:     "#9ca3af",
   gold:      "#c58b2a",
   goldLight: "#fef3cd",
-  font:      "'Outfit', sans-serif",
+  font:      "'Raleway', sans-serif",
   radius:    "20px",
   shadowLg:  "0 20px 40px -8px rgba(0,0,0,0.10), 0 8px 16px -4px rgba(0,0,0,0.06)",
 };
@@ -439,7 +439,7 @@ function Card({ label, icon, children, accentColor, delay = "0ms" }: {
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: "9px", marginBottom: "1.4rem" }}>
         <span style={{ color: accentColor ?? "#c58b2a", fontSize: "0.88rem" }}>{icon}</span>
-        <h2 style={{ margin: 0, color: "#1a1d23", fontSize: "0.88rem", fontWeight: 700, letterSpacing: "0.01em", fontFamily: "'Outfit', sans-serif" }}>{label}</h2>
+        <h2 style={{ margin: 0, color: "#1a1d23", fontSize: "0.88rem", fontWeight: 700, letterSpacing: "0.01em", fontFamily: "'Raleway', sans-serif" }}>{label}</h2>
       </div>
       {children}
     </div>
@@ -455,7 +455,7 @@ function Row({ label, icon, children }: { label: string; icon: React.ReactNode; 
     <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.5rem" }}>
       <div style={{ minWidth: "185px", display: "flex", alignItems: "center", gap: "7px" }}>
         <span style={{ color: "#9ca3af", fontSize: "0.82rem" }}>{icon}</span>
-        <span style={{ color: "#6b7280", fontSize: "0.78rem", fontWeight: 500, fontFamily: "'Outfit', sans-serif" }}>{label}</span>
+        <span style={{ color: "#6b7280", fontSize: "0.78rem", fontWeight: 500, fontFamily: "'Raleway', sans-serif" }}>{label}</span>
       </div>
       <div style={{ flex: 1, minWidth: "180px" }}>{children}</div>
     </div>
@@ -469,7 +469,7 @@ function ValueDisplay({ value, onEdit }: { value: string; onEdit: () => void }) 
       <button onClick={onEdit} style={{
         background: "none", border: `1px solid #e8eaed`, borderRadius: "8px",
         color: "#6b7280", cursor: "pointer", padding: "3px 10px", fontSize: "0.73rem",
-        display: "flex", alignItems: "center", gap: "5px", fontFamily: "'Outfit', sans-serif",
+        display: "flex", alignItems: "center", gap: "5px", fontFamily: "'Raleway', sans-serif",
         transition: "all 0.18s", whiteSpace: "nowrap",
       }}
         onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#c58b2a"; e.currentTarget.style.color = "#c58b2a"; }}
@@ -492,7 +492,7 @@ function InlineEdit({ value, onChange, onSave, onCancel, saving, placeholder, ty
         style={{
           flex: 1, minWidth: "150px", background: "#f0f2f5", border: `1.5px solid #e8eaed`,
           borderRadius: "9px", color: "#1a1d23", padding: "7px 12px", fontSize: "0.87rem",
-          outline: "none", fontFamily: "'Outfit', sans-serif", transition: "border-color 0.18s",
+          outline: "none", fontFamily: "'Raleway', sans-serif", transition: "border-color 0.18s",
         }}
         onFocus={(e) => (e.currentTarget.style.borderColor = "#c58b2a")}
         onBlur={(e) => (e.currentTarget.style.borderColor = "#e8eaed")}
@@ -500,7 +500,7 @@ function InlineEdit({ value, onChange, onSave, onCancel, saving, placeholder, ty
       <button onClick={onSave} disabled={saving} style={{
         background: "#c58b2a", border: "none", borderRadius: "9px", color: "#fff",
         fontWeight: 600, padding: "7px 14px", cursor: "pointer", fontSize: "0.78rem",
-        opacity: saving ? 0.7 : 1, display: "flex", alignItems: "center", gap: "5px", fontFamily: "'Outfit', sans-serif",
+        opacity: saving ? 0.7 : 1, display: "flex", alignItems: "center", gap: "5px", fontFamily: "'Raleway', sans-serif",
       }}>
         <FaSave size={11} />{saving ? "..." : "Guardar"}
       </button>
@@ -519,12 +519,12 @@ function StackedInput({ label, type, value, onChange, placeholder }: {
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-      <label style={{ color: "#6b7280", fontSize: "0.75rem", fontWeight: 500, fontFamily: "'Outfit', sans-serif" }}>{label}</label>
+      <label style={{ color: "#6b7280", fontSize: "0.75rem", fontWeight: 500, fontFamily: "'Raleway', sans-serif" }}>{label}</label>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
         style={{
           background: "#f0f2f5", border: `1.5px solid #e8eaed`, borderRadius: "10px",
           color: "#1a1d23", padding: "9px 13px", fontSize: "0.87rem", outline: "none",
-          fontFamily: "'Outfit', sans-serif", transition: "border-color 0.18s",
+          fontFamily: "'Raleway', sans-serif", transition: "border-color 0.18s",
         }}
         onFocus={(e) => (e.currentTarget.style.borderColor = "#c58b2a")}
         onBlur={(e) => (e.currentTarget.style.borderColor = "#e8eaed")}

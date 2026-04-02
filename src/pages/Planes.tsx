@@ -8,7 +8,7 @@ import {
   FaShieldAlt, FaRocket, FaStar,
 } from "react-icons/fa";
 
-const FONT_LINK = "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap";
+const FONT_LINK = "https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap";
 
 const T = {
   bg:       "#f0f2f5",
@@ -18,7 +18,7 @@ const T = {
   muted:    "#6b7280",
   faint:    "#9ca3af",
   gold:     "#c58b2a",
-  font:     "'Outfit', sans-serif",
+  font:     "'Raleway', sans-serif",
   radius:   "22px",
   shadow:   "0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04)",
   shadowLg: "0 20px 40px -8px rgba(0,0,0,0.10), 0 8px 16px -4px rgba(0,0,0,0.06)",

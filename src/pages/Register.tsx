@@ -21,12 +21,12 @@ interface IPlanAPI {
 
 const PLAN_META: Record<PlanType, { color: string; icon: string; badge?: string; period: string }> = {
   trial:   { color: "#0ea5e9", icon: "🚀", period: "" },
-  monthly: { color: "#f59e0b", icon: "📅", period: "USD / mes", badge: "Popular" },
-  annual:  { color: "#8b5cf6", icon: "⚡", period: "USD / año", badge: "Mejor valor" },
+  monthly: { color: "#f59e0b", icon: "📅", period: "/ mes", badge: "Popular" },
+  annual:  { color: "#8b5cf6", icon: "⚡", period: "/ año", badge: "Mejor valor" },
 };
 
 const STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   .reg-root {
@@ -35,7 +35,7 @@ const STYLES = `
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Raleway', sans-serif;
     position: relative;
     padding: 1rem 1rem 2rem;
     overflow-x: hidden;
@@ -52,7 +52,7 @@ const STYLES = `
   }
 
   .logo {
-    font-family: 'Syne', sans-serif;
+    font-family: 'Raleway', sans-serif;
     font-weight: 800;
     font-size: 2rem;
     background: linear-gradient(90deg, #0ea5e9, #8b5cf6, #f59e0b);
@@ -83,7 +83,7 @@ const STYLES = `
     width: 28px; height: 28px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 0.72rem; font-weight: 700;
-    font-family: 'Syne', sans-serif;
+    font-family: 'Raleway', sans-serif;
     transition: all 0.35s ease;
     border: 2px solid #e2e8f0;
     color: #94a3b8; background: #fff;
@@ -95,7 +95,7 @@ const STYLES = `
 
   /* ── PLANES ── */
   .plans-wrapper { width: 100%; max-width: 900px; animation: fadeUp 0.45s ease both; position: relative; z-index: 1; }
-  .plans-title { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; color: #0f172a; text-align: center; margin-bottom: 0.25rem; }
+  .plans-title { font-family: 'Raleway', sans-serif; font-size: 1.4rem; font-weight: 800; color: #0f172a; text-align: center; margin-bottom: 0.25rem; }
   .plans-subtitle { color: #64748b; font-size: 0.9rem; text-align: center; margin-bottom: 1rem; }
   .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; margin-bottom: 1rem; }
   @media (max-width: 700px) { .plans-grid { grid-template-columns: 1fr; } }
@@ -121,7 +121,7 @@ const STYLES = `
   .plan-badge {
     position: absolute; top: 10px; right: 10px;
     background: var(--plan-color); color: #fff;
-    font-size: 0.6rem; font-weight: 700; font-family: 'Syne', sans-serif;
+    font-size: 0.6rem; font-weight: 700; font-family: 'Raleway', sans-serif;
     letter-spacing: 0.8px; padding: 2px 8px; border-radius: 20px; text-transform: uppercase;
   }
   .plan-icon {
@@ -131,10 +131,10 @@ const STYLES = `
     display: flex; align-items: center; justify-content: center;
     font-size: 1.1rem; margin-bottom: 0.7rem;
   }
-  .plan-name { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; color: #0f172a; margin-bottom: 0.2rem; }
+  .plan-name { font-family: 'Raleway', sans-serif; font-size: 1rem; font-weight: 800; color: #0f172a; margin-bottom: 0.2rem; }
   .plan-desc { font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.7rem; line-height: 1.4; }
   .plan-price-wrap { display: flex; align-items: baseline; gap: 3px; margin-bottom: 0.5rem; }
-  .plan-price { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--plan-color); line-height: 1; }
+  .plan-price { font-family: 'Raleway', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--plan-color); line-height: 1; }
   .plan-period { font-size: 0.78rem; color: #94a3b8; }
   .trial-tag {
     font-size: 0.7rem; font-weight: 600; color: var(--plan-color);
@@ -154,7 +154,7 @@ const STYLES = `
   .select-indicator {
     margin-top: 0.9rem; height: 34px; border-radius: 9px; border: 1.5px solid #e2e8f0;
     display: flex; align-items: center; justify-content: center;
-    font-size: 0.8rem; font-weight: 700; font-family: 'Syne', sans-serif;
+    font-size: 0.8rem; font-weight: 700; font-family: 'Raleway', sans-serif;
     color: #94a3b8; transition: all 0.28s ease; background: #f8fafc;
   }
   .plan-card.selected .select-indicator { background: var(--plan-color); border-color: var(--plan-color); color: #fff; }
@@ -174,7 +174,7 @@ const STYLES = `
   /* ── FORM ── */
   .form-wrapper { width: 100%; max-width: 460px; animation: fadeUp 0.45s ease both; position: relative; z-index: 1; }
   .form-card { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 22px; padding: 1.6rem; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
-  .form-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; color: #0f172a; margin-bottom: 0.2rem; }
+  .form-title { font-family: 'Raleway', sans-serif; font-size: 1.3rem; font-weight: 800; color: #0f172a; margin-bottom: 0.2rem; }
   .form-subtitle { color: #94a3b8; font-size: 0.88rem; margin-bottom: 1.1rem; }
 
   .selected-plan-chip {
@@ -191,13 +191,13 @@ const STYLES = `
   .field-label {
     font-size: 0.75rem; font-weight: 700; color: #64748b;
     letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 0.35rem;
-    display: block; font-family: 'Syne', sans-serif;
+    display: block; font-family: 'Raleway', sans-serif;
   }
   .field-input-wrap { position: relative; }
   .field-input {
     width: 100%; background: #f8fafc; border: 1.5px solid #e2e8f0;
     border-radius: 11px; padding: 0.65rem 0.9rem; color: #0f172a;
-    font-size: 0.92rem; font-family: 'DM Sans', sans-serif;
+    font-size: 0.92rem; font-family: 'Raleway', sans-serif;
     outline: none; transition: all 0.2s ease;
   }
   .field-input::placeholder { color: #cbd5e1; }
@@ -216,14 +216,14 @@ const STYLES = `
   .btn-back {
     display: inline-flex; align-items: center; gap: 6px;
     background: none; border: 1.5px solid #e2e8f0; border-radius: 9px;
-    padding: 0.45rem 0.9rem; font-size: 0.82rem; font-family: 'Syne', sans-serif;
+    padding: 0.45rem 0.9rem; font-size: 0.82rem; font-family: 'Raleway', sans-serif;
     font-weight: 600; color: #64748b; cursor: pointer; margin-bottom: 0.9rem; transition: all 0.2s;
   }
   .btn-back:hover { border-color: #cbd5e1; color: #0f172a; background: #f8fafc; }
 
   .btn-next {
     display: block; width: 100%; padding: 0.8rem; border-radius: 12px;
-    border: none; cursor: pointer; font-family: 'Syne', sans-serif;
+    border: none; cursor: pointer; font-family: 'Raleway', sans-serif;
     font-weight: 700; font-size: 0.95rem;
     background: linear-gradient(135deg, #0ea5e9, #0284c7);
     color: #fff; box-shadow: 0 4px 16px rgba(14,165,233,0.3); transition: all 0.25s ease;
@@ -233,7 +233,7 @@ const STYLES = `
 
   .btn-submit {
     width: 100%; padding: 0.8rem; border-radius: 12px; border: none; cursor: pointer;
-    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem;
+    font-family: 'Raleway', sans-serif; font-weight: 700; font-size: 0.95rem;
     background: linear-gradient(135deg, #0ea5e9, #0284c7);
     color: #fff; box-shadow: 0 4px 16px rgba(14,165,233,0.3);
     transition: all 0.25s ease; margin-top: 1rem;
@@ -255,15 +255,15 @@ const STYLES = `
   .login-link a:hover { text-decoration: underline; }
 
   /* ── Verificación ── */
-  .ve-root { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f0f2f5; font-family: 'DM Sans', sans-serif; padding: 2rem 1rem; }
+  .ve-root { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f0f2f5; font-family: 'Raleway', sans-serif; padding: 2rem 1rem; }
   .ve-card { background: #fff; border-radius: 24px; padding: 2.8rem 2.4rem; max-width: 460px; width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.09); animation: fadeUp 0.4s ease both; }
   .ve-icon { width: 72px; height: 72px; border-radius: 50%; background: #f0fdf4; border: 2px solid #a7f3d0; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.5rem; }
-  .ve-title { font-family: 'Syne', sans-serif; font-size: 1.35rem; font-weight: 800; color: #1a1d23; margin-bottom: 0.6rem; }
+  .ve-title { font-family: 'Raleway', sans-serif; font-size: 1.35rem; font-weight: 800; color: #1a1d23; margin-bottom: 0.6rem; }
   .ve-msg { color: #6b7280; font-size: 0.88rem; line-height: 1.7; margin-bottom: 1.4rem; }
   .ve-email-badge { display: inline-block; background: #f0f9ff; border: 1.5px solid #bae6fd; border-radius: 10px; padding: 8px 18px; color: #0369a1; font-weight: 600; font-size: 0.88rem; margin-bottom: 1.4rem; }
   .ve-divider { height: 1px; background: #e8eaed; margin: 1.4rem 0; }
   .ve-resend-label { color: #9ca3af; font-size: 0.78rem; margin-bottom: 0.75rem; }
-  .ve-resend-btn { width: 100%; padding: 11px; background: #f8fafc; border: 1.5px solid #e8eaed; border-radius: 11px; color: #374151; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+  .ve-resend-btn { width: 100%; padding: 11px; background: #f8fafc; border: 1.5px solid #e8eaed; border-radius: 11px; color: #374151; font-family: 'Raleway', sans-serif; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
   .ve-resend-btn:hover:not(:disabled) { border-color: #0ea5e9; color: #0ea5e9; background: #ecfeff; }
   .ve-resend-btn:disabled { opacity: 0.6; cursor: not-allowed; }
   .ve-resend-msg { font-size: 0.78rem; color: #059669; margin-top: 0.7rem; }
