@@ -253,11 +253,11 @@ export default function Planes() {
                     ${plan.price.toLocaleString("es-DO")}
                   </span>
                   <span style={{ color: T.muted, fontSize: "0.82rem", marginLeft: "5px" }}>
-                    DOP / {plan.type === "annual" ? "año" : "mes"}
+                    USD / {plan.type === "annual" ? "año" : "mes"}
                   </span>
                   {plan.type === "annual" && (
                     <div style={{ color: "#059669", fontSize: "0.75rem", marginTop: "4px", fontWeight: 500 }}>
-                      ✓ Equivale a 2 meses gratis
+                      
                     </div>
                   )}
                 </div>

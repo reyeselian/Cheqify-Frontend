@@ -159,7 +159,7 @@ export default function AdminPlanes() {
                       {p.price === 0 ? (
                         <span style={{ color }}>Gratis</span>
                       ) : (
-                        <>${p.price.toLocaleString()}<span style={{ fontSize: "0.7rem", color: "#94a3b8", fontWeight: 400 }}> DOP</span></>
+                        <>${p.price.toLocaleString()}<span style={{ fontSize: "0.7rem", color: "#94a3b8", fontWeight: 400 }}> USD</span></>
                       )}
                     </div>
                   </div>
@@ -237,7 +237,7 @@ export default function AdminPlanes() {
                 </FormField>
               </Row2>
               <Row2>
-                <FormField label="Precio (DOP)">
+                <FormField label="Precio (USD)">
                   <FInput value={String(form.price)} type="number" onChange={(v) => setForm({ ...form, price: Number(v) })} placeholder="0" />
                 </FormField>
                 <FormField label="Duración (días)">
