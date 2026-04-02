@@ -63,23 +63,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const checkStatus = async () => {
       try {
-        const { data } = await api.get("/auth/me", {
-          headers: { Authorization: `Bearer ${user.token}` },
-        });
+      const { data } = await api.get("/auth/me", {
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
 
-        // Si el status cambió, actualizarlo en memoria
-        if (data.status !== user.status) {
-          if (data.status === "blocked") {
-            // Usuario bloqueado → cerrar sesión inmediatamente
-            logout();
-            return;
-          }
-          updateUser({ status: data.status, planExpiresAt: data.planExpiresAt });
-        }
-      } catch {
-        // Si el token expiró o hay error 401, cerrar sesión
+      if (data.status === "blocked") {
+        logout();
+        return;
       }
-    };
+
+      // Actualizar siempre por si cambió algún campo
+      updateUser({
+        status:          data.status,
+        planExpiresAt:   data.planExpiresAt,
+        customPriceNote: data.customPriceNote ?? null,
+      } as any);
+
+    } catch {
+      // Si el token expiró o hay error 401, cerrar sesión
+    }
+};
 
     // Verificar inmediatamente y luego cada 30 segundos
     checkStatus();
