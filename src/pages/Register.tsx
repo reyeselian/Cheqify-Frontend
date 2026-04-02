@@ -21,8 +21,8 @@ interface IPlanAPI {
 
 const PLAN_META: Record<PlanType, { color: string; icon: string; badge?: string; period: string }> = {
   trial:   { color: "#0ea5e9", icon: "🚀", period: "" },
-  monthly: { color: "#f59e0b", icon: "📅", period: "/ mes", badge: "Popular" },
-  annual:  { color: "#8b5cf6", icon: "⚡", period: "/ año", badge: "Mejor valor" },
+  monthly: { color: "#f59e0b", icon: "📅", period: "USD / mes", badge: "Popular" },
+  annual:  { color: "#8b5cf6", icon: "⚡", period: "USD / año", badge: "Mejor valor" },
 };
 
 const STYLES = `
