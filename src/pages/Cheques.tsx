@@ -291,6 +291,7 @@ export default function Cheques() {
               style={{ background: `linear-gradient(135deg, var(--color-principal), #3a3a3a)` }}
             >
               <tr>
+                <th style={{ width: "50px" }}>#</th>
                 <th>No. Cheque</th>
                 <th>Banco</th>
                 <th>Beneficiario</th>
@@ -306,8 +307,13 @@ export default function Cheques() {
               </tr>
             </thead>
             <tbody>
-              {filteredCheques.map((c) => (
+              {filteredCheques.map((c, index) => (
                 <tr key={c._id}>
+                  <td>
+                    <span style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", width:"26px", height:"26px", borderRadius:"50%", background:"linear-gradient(145deg,#333,#555)", color:"#fff", fontSize:"0.72rem", fontWeight:700 }}>
+                      {index + 1}
+                    </span>
+                  </td>
                   <td>{c.numero}</td>
                   <td>{c.banco}</td>
                   <td>{c.beneficiario}</td>

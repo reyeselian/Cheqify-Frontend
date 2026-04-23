@@ -1,0 +1,144 @@
+import React, { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import axios from "axios";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const FONT_LINK = "https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap";
+const T = { gold: "#c58b2a", font: "'Raleway', sans-serif", text: "#1a1d23", muted: "#6b7280", border: "#e8eaed", bg: "#f0f2f5" };
+
+export default function ResetPassword() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token") || "";
+
+  const [password, setPassword]           = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPass, setShowPass]           = useState(false);
+  const [showConfirm, setShowConfirm]     = useState(false);
+  const [loading, setLoading]             = useState(false);
+  const [done, setDone]                   = useState(false);
+  const [error, setError]                 = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password.length < 6) { setError("La contraseña debe tener al menos 6 caracteres."); return; }
+    if (password !== confirmPassword) { setError("Las contraseñas no coinciden."); return; }
+    if (!token) { setError("Token inválido. Solicita un nuevo enlace de recuperación."); return; }
+
+    setLoading(true); setError("");
+    try {
+      await axios.post(`${API_URL}/auth/reset-password/${token}`, { password });
+      setDone(true);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Error al restablecer la contraseña.");
+    } finally { setLoading(false); }
+  };
+
+  const inputStyle = (hasError: boolean) => ({
+    width: "100%", background: "#f8fafc",
+    border: `1.5px solid ${hasError ? "#ef4444" : T.border}`,
+    borderRadius: "11px", padding: "0.65rem 2.6rem 0.65rem 0.9rem",
+    color: T.text, fontSize: "0.92rem", fontFamily: T.font,
+    outline: "none", boxSizing: "border-box" as const,
+  });
+
+  return (
+    <>
+      <link rel="stylesheet" href={FONT_LINK} />
+      <div style={{ minHeight: "100vh", background: T.bg, fontFamily: T.font, display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem 1rem" }}>
+        <div style={{ width: "100%", maxWidth: "420px" }}>
+          <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+            <div style={{ fontSize: "2rem", fontWeight: 800, letterSpacing: "-1px", background: "linear-gradient(90deg,#c58b2a,#27b6b1,#9b9b9b)", backgroundSize: "300%", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Cheqify</div>
+            <div style={{ color: "#94a3b8", fontSize: "0.65rem", letterSpacing: "3px", textTransform: "uppercase" }}>Sistema de Gestión de Cheques</div>
+          </div>
+
+          <div style={{ background: "#fff", borderRadius: "20px", padding: "2.2rem", boxShadow: "0 20px 60px rgba(0,0,0,0.08)", border: `1px solid ${T.border}` }}>
+            {!done ? (
+              <>
+                <div style={{ textAlign: "center", marginBottom: "1.4rem" }}>
+                  <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "#fef3cd", border: "2px solid #fde68a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.8rem", margin: "0 auto 1rem" }}>🔑</div>
+                  <h2 style={{ margin: 0, color: T.text, fontSize: "1.2rem", fontWeight: 700 }}>Nueva contraseña</h2>
+                  <p style={{ margin: "0.5rem 0 0", color: T.muted, fontSize: "0.85rem", lineHeight: 1.6 }}>Ingresa y confirma tu nueva contraseña.</p>
+                </div>
+
+                {!token && (
+                  <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "10px", padding: "10px 14px", color: "#dc2626", fontSize: "0.83rem", marginBottom: "1rem" }}>
+                    ⚠️ Enlace inválido. Solicita un nuevo enlace de recuperación.
+                  </div>
+                )}
+
+                {error && <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "10px", padding: "10px 14px", color: "#dc2626", fontSize: "0.83rem", marginBottom: "1rem" }}>{error}</div>}
+
+                <form onSubmit={handleSubmit}>
+                  {/* Contraseña */}
+                  <div style={{ marginBottom: "0.9rem" }}>
+                    <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: "0.35rem", fontFamily: T.font }}>Nueva contraseña</label>
+                    <div style={{ position: "relative" }}>
+                      <input type={showPass ? "text" : "password"} value={password}
+                        onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                        placeholder="Mínimo 6 caracteres" required
+                        style={inputStyle(!!error && password !== confirmPassword)}
+                        onFocus={(e) => (e.currentTarget.style.borderColor = T.gold)}
+                        onBlur={(e)  => (e.currentTarget.style.borderColor = (error && password !== confirmPassword) ? "#ef4444" : T.border)}
+                      />
+                      <button type="button" onClick={() => setShowPass(!showPass)}
+                        style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", fontSize: "0.9rem", color: "#94a3b8" }}>
+                        {showPass ? "🙈" : "👁"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Confirmar contraseña */}
+                  <div style={{ marginBottom: "1.2rem" }}>
+                    <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: "0.35rem", fontFamily: T.font }}>Confirmar contraseña</label>
+                    <div style={{ position: "relative" }}>
+                      <input type={showConfirm ? "text" : "password"} value={confirmPassword}
+                        onChange={(e) => { setConfirmPassword(e.target.value); setError(""); }}
+                        placeholder="Repite la contraseña" required
+                        style={inputStyle(!!confirmPassword && password !== confirmPassword)}
+                        onFocus={(e) => (e.currentTarget.style.borderColor = T.gold)}
+                        onBlur={(e)  => (e.currentTarget.style.borderColor = (confirmPassword && password !== confirmPassword) ? "#ef4444" : T.border)}
+                      />
+                      <button type="button" onClick={() => setShowConfirm(!showConfirm)}
+                        style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", fontSize: "0.9rem", color: "#94a3b8" }}>
+                        {showConfirm ? "🙈" : "👁"}
+                      </button>
+                    </div>
+                    {confirmPassword && password !== confirmPassword && (
+                      <p style={{ color: "#ef4444", fontSize: "0.75rem", marginTop: "4px" }}>⚠️ Las contraseñas no coinciden</p>
+                    )}
+                    {confirmPassword && password === confirmPassword && (
+                      <p style={{ color: "#059669", fontSize: "0.75rem", marginTop: "4px" }}>✓ Las contraseñas coinciden</p>
+                    )}
+                  </div>
+
+                  <button type="submit" disabled={loading || !token}
+                    style={{ width: "100%", padding: "0.8rem", borderRadius: "12px", border: "none", background: "linear-gradient(135deg,#c58b2a,#e8c47a)", color: "#111", fontWeight: 700, fontSize: "0.95rem", fontFamily: T.font, cursor: (loading || !token) ? "not-allowed" : "pointer", opacity: (loading || !token) ? 0.7 : 1, boxShadow: "0 4px 16px rgba(197,139,42,0.3)" }}>
+                    {loading ? "Guardando..." : "Restablecer contraseña"}
+                  </button>
+                </form>
+              </>
+            ) : (
+              /* ── Éxito ── */
+              <div style={{ textAlign: "center" }}>
+                <div style={{ width: "72px", height: "72px", borderRadius: "50%", background: "#ecfdf5", border: "2px solid #a7f3d0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "2rem", margin: "0 auto 1.2rem" }}>✅</div>
+                <h2 style={{ margin: "0 0 0.6rem", color: T.text, fontSize: "1.2rem", fontWeight: 700 }}>¡Contraseña restablecida!</h2>
+                <p style={{ color: T.muted, fontSize: "0.86rem", lineHeight: 1.7, margin: "0 0 1.6rem" }}>
+                  Tu contraseña ha sido actualizada correctamente.<br />Ya puedes iniciar sesión con tu nueva contraseña.
+                </p>
+                <button onClick={() => navigate("/login")}
+                  style={{ width: "100%", padding: "0.8rem", borderRadius: "12px", border: "none", background: "linear-gradient(135deg,#1a1d23,#3a3a3a)", color: "#fff", fontWeight: 700, fontSize: "0.95rem", fontFamily: T.font, cursor: "pointer", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
+                  Ir al inicio de sesión
+                </button>
+              </div>
+            )}
+
+            <div style={{ textAlign: "center", marginTop: "1.2rem" }}>
+              <a href="/login" style={{ color: T.gold, textDecoration: "none", fontSize: "0.83rem", fontWeight: 600 }}>← Volver al inicio de sesión</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

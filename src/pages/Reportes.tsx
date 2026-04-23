@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { api } from "../services/api";
 import {
   Card,
@@ -25,10 +25,15 @@ import {
   Bar,
   CartesianGrid,
 } from "recharts";
+import { Chart, ArcElement, DoughnutController, Tooltip as CJTooltip } from "chart.js";
+
+Chart.register(ArcElement, DoughnutController, CJTooltip);
 
 export default function Reportes() {
   const [cheques, setCheques] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const gaugeRef = useRef<HTMLCanvasElement>(null);
+  const gaugeInstance = useRef<Chart | null>(null);
 
   useEffect(() => {
     fetchCheques();
@@ -47,13 +52,70 @@ export default function Reportes() {
 
   // 📊 Datos calculados
   const pendientes = cheques.filter((c) => c.estado === "pendiente");
-  const cobrados = cheques.filter((c) => c.estado === "cobrado");
-  const devueltos = cheques.filter((c) => c.estado === "devuelto");
+  const cobrados   = cheques.filter((c) => c.estado === "cobrado");
+  const devueltos  = cheques.filter((c) => c.estado === "devuelto");
 
   const montoPendiente = pendientes.reduce((a, c) => a + (Number(c.monto) || 0), 0);
-  const montoCobrados = cobrados.reduce((a, c) => a + (Number(c.monto) || 0), 0);
+  const montoCobrados  = cobrados.reduce((a, c) => a + (Number(c.monto) || 0), 0);
   const montoDevueltos = devueltos.reduce((a, c) => a + (Number(c.monto) || 0), 0);
-  const montoTotal = montoPendiente + montoCobrados + montoDevueltos;
+  const montoTotal     = montoPendiente + montoCobrados + montoDevueltos;
+
+  const pctCobrado = cheques.length > 0 ? Math.round((cobrados.length / cheques.length) * 100) : 0;
+
+  // Gauge — renderizar con Chart.js
+  useEffect(() => {
+    if (loading || !gaugeRef.current) return;
+
+    if (gaugeInstance.current) {
+      gaugeInstance.current.destroy();
+      gaugeInstance.current = null;
+    }
+
+    const ctx = gaugeRef.current.getContext("2d");
+    if (!ctx) return;
+
+    gaugeInstance.current = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        datasets: [{
+          data: [pctCobrado, 100 - pctCobrado],
+          backgroundColor: ["#198754", "rgba(0,0,0,0.07)"],
+          borderWidth: 0,
+          circumference: 180,
+          rotation: 270,
+        } as any],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "75%",
+        plugins: {
+          legend:  { display: false },
+          tooltip: { enabled: false },
+        },
+      },
+      plugins: [{
+        id: "gaugeText",
+        afterDraw(chart: any) {
+          const { ctx: c, chartArea: { top, width, height } } = chart;
+          c.save();
+          c.font = "bold 28px sans-serif";
+          c.fillStyle = "#198754";
+          c.textAlign = "center";
+          c.fillText(`${pctCobrado}%`, width / 2, top + height * 0.72);
+          c.font = "12px sans-serif";
+          c.fillStyle = "#94a3b8";
+          c.fillText("cheques cobrados", width / 2, top + height * 0.90);
+          c.restore();
+        },
+      }],
+    } as any);
+
+    return () => {
+      gaugeInstance.current?.destroy();
+      gaugeInstance.current = null;
+    };
+  }, [loading, pctCobrado]);
 
   const formatCurrency = (value: number) =>
     value.toLocaleString("es-DO", {
@@ -65,21 +127,16 @@ export default function Reportes() {
   // 📗 Exportar a Excel
   const exportToExcel = () => {
     const data = cheques.map((c) => ({
-      "No. Cheque": c.numero,
-      Banco: c.banco,
-      Beneficiario: c.beneficiario,
-      Monto: c.monto,
-      Estado: c.estado,
-      "Fecha Cheque": c.fechaCheque
-        ? new Date(c.fechaCheque).toLocaleDateString()
-        : "No registrada",
-      "Fecha Depósito": c.fechaDeposito
-        ? new Date(c.fechaDeposito).toLocaleDateString()
-        : "No registrada",
+      "No. Cheque":    c.numero,
+      Banco:           c.banco,
+      Beneficiario:    c.beneficiario,
+      Monto:           c.monto,
+      Estado:          c.estado,
+      "Fecha Cheque":  c.fechaCheque  ? new Date(c.fechaCheque).toLocaleDateString()  : "No registrada",
+      "Fecha Depósito":c.fechaDeposito? new Date(c.fechaDeposito).toLocaleDateString(): "No registrada",
     }));
-
     const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
+    const workbook  = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Cheques");
     XLSX.writeFile(workbook, "Reporte_Cheques.xlsx");
   };
@@ -103,50 +160,38 @@ export default function Reportes() {
         c.beneficiario,
         formatCurrency(Number(c.monto)),
         c.estado,
-        c.fechaDeposito
-          ? new Date(c.fechaDeposito).toLocaleDateString()
-          : "No registrada",
+        c.fechaDeposito ? new Date(c.fechaDeposito).toLocaleDateString() : "No registrada",
       ]),
-      styles: { fontSize: 9 },
+      styles:     { fontSize: 9 },
       headStyles: { fillColor: [33, 37, 41] },
     });
 
     doc.save("Reporte_Cheques.pdf");
   };
 
-  // 🎨 Colores para los gráficos
   const COLORS = ["#ffc107", "#198754", "#6c757d"];
 
   const pieData = [
     { name: "Pendientes", value: pendientes.length },
-    { name: "Cobrados", value: cobrados.length },
-    { name: "Devueltos", value: devueltos.length },
+    { name: "Cobrados",   value: cobrados.length   },
+    { name: "Devueltos",  value: devueltos.length  },
   ];
 
   const barData = [
     { name: "Pendientes", monto: montoPendiente },
-    { name: "Cobrados", monto: montoCobrados },
-    { name: "Devueltos", monto: montoDevueltos },
+    { name: "Cobrados",   monto: montoCobrados   },
+    { name: "Devueltos",  monto: montoDevueltos  },
   ];
 
   return (
     <Container className="p-3">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3 className="fw-bold">📊 Reportes de Cheques</h3>
-
         <div className="d-flex gap-2">
-          <Button
-            variant="success"
-            className="fw-bold d-flex align-items-center gap-2"
-            onClick={exportToExcel}
-          >
+          <Button variant="success" className="fw-bold d-flex align-items-center gap-2" onClick={exportToExcel}>
             <FaFileExcel /> Exportar Excel
           </Button>
-          <Button
-            variant="danger"
-            className="fw-bold d-flex align-items-center gap-2"
-            onClick={exportToPDF}
-          >
+          <Button variant="danger" className="fw-bold d-flex align-items-center gap-2" onClick={exportToPDF}>
             <FaFilePdf /> Exportar PDF
           </Button>
         </div>
@@ -158,51 +203,64 @@ export default function Reportes() {
           <Spinner animation="border" variant="dark" />
         </div>
       ) : (
-        <Row className="g-3 mb-4">
-          {[
-            { label: "Total", count: cheques.length, monto: montoTotal, color: "primary" },
-            { label: "Pendientes", count: pendientes.length, monto: montoPendiente, color: "warning" },
-            { label: "Cobrados", count: cobrados.length, monto: montoCobrados, color: "success" },
-            { label: "Devueltos", count: devueltos.length, monto: montoDevueltos, color: "secondary" },
-          ].map((item, idx) => (
-            <Col key={idx} xs={12} md={6} lg={3}>
-              <Card
-                className="text-center border-0 rounded-4 shadow-sm"
-                style={{
-                  background: `linear-gradient(145deg, var(--bs-${item.color}) 10%, #fff)`,
-                  color: item.color === "warning" ? "#000" : "#fff",
-                }}
-              >
-                <Card.Body>
-                  <h6 className="fw-bold">{item.label}</h6>
-                  <h4 className="fw-bold">{item.count}</h4>
-                  <small>{formatCurrency(item.monto)}</small>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      )}
-
-      {/* GRÁFICOS */}
-      {!loading && (
         <>
+          <Row className="g-3 mb-4">
+            {[
+              { label: "Total",      count: cheques.length,   monto: montoTotal,       color: "primary"   },
+              { label: "Pendientes", count: pendientes.length, monto: montoPendiente,   color: "warning"   },
+              { label: "Cobrados",   count: cobrados.length,   monto: montoCobrados,    color: "success"   },
+              { label: "Devueltos",  count: devueltos.length,  monto: montoDevueltos,   color: "secondary" },
+            ].map((item, idx) => (
+              <Col key={idx} xs={12} md={6} lg={3}>
+                <Card
+                  className="text-center border-0 rounded-4 shadow-sm"
+                  style={{
+                    background: `linear-gradient(145deg, var(--bs-${item.color}) 10%, #fff)`,
+                    color: item.color === "warning" ? "#000" : "#fff",
+                  }}
+                >
+                  <Card.Body>
+                    <h6 className="fw-bold">{item.label}</h6>
+                    <h4 className="fw-bold">{item.count}</h4>
+                    <small>{formatCurrency(item.monto)}</small>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+
+          {/* GAUGE + GRÁFICOS */}
           <h5 className="fw-bold mb-3">
             <FaChartPie className="me-2" /> Distribución de Cheques
           </h5>
-          <Row className="g-3">
-            <Col lg={6} md={12}>
+
+          <Row className="g-3 mb-3">
+            {/* Gauge */}
+            <Col lg={4} md={12}>
+              <Card className="p-3 shadow-sm rounded-4 h-100 d-flex flex-column align-items-center justify-content-center">
+                <h6 className="text-center mb-2">Tasa de Cobro</h6>
+                <div style={{ position: "relative", width: "100%", height: "200px" }}>
+                  <canvas
+                    ref={gaugeRef}
+                    role="img"
+                    aria-label={`Gauge mostrando ${pctCobrado}% de cheques cobrados`}
+                  />
+                </div>
+                <div className="d-flex justify-content-around w-100 mt-2">
+                  <small className="text-muted">0%</small>
+                  <small className="text-muted">50%</small>
+                  <small className="text-muted">100%</small>
+                </div>
+              </Card>
+            </Col>
+
+            {/* Pie */}
+            <Col lg={4} md={6}>
               <Card className="p-3 shadow-sm rounded-4">
                 <h6 className="text-center mb-3">Cantidad de Cheques</h6>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={230}>
                   <PieChart>
-                    <Pie
-                      data={pieData}
-                      dataKey="value"
-                      nameKey="name"
-                      outerRadius={110}
-                      label
-                    >
+                    <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={90} label>
                       {pieData.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
@@ -214,10 +272,11 @@ export default function Reportes() {
               </Card>
             </Col>
 
-            <Col lg={6} md={12}>
+            {/* Bar */}
+            <Col lg={4} md={6}>
               <Card className="p-3 shadow-sm rounded-4">
                 <h6 className="text-center mb-3">Monto Total por Estado</h6>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={230}>
                   <BarChart data={barData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, type AccountStatus, type PlanType } from "../context/AuthContext";
 import { api } from "../services/api";
@@ -26,24 +26,21 @@ const T = {
   shadowLg:  "0 20px 40px -8px rgba(0,0,0,0.10), 0 8px 16px -4px rgba(0,0,0,0.06)",
 };
 
-const PLAN_CONFIG: Record<PlanType, { label: string; color: string; bg: string; border: string; icon: React.ReactNode; features: string[] }> = {
+const PLAN_CONFIG: Record<PlanType, { label: string; color: string; bg: string; border: string; icon: React.ReactNode }> = {
   trial: {
     label: "Plan de Prueba", color: "#0891b2",
     bg: "#ecfeff", border: "#a5f3fc",
     icon: <FaHourglassHalf />,
-    features: ["14 días gratis", "Cheques ilimitados", "Reportes básicos", "1 usuario"],
   },
   monthly: {
     label: "Plan Mensual", color: "#c58b2a",
     bg: "#fffbeb", border: "#fde68a",
     icon: <FaCrown />,
-    features: ["Renovación mensual", "Cheques ilimitados", "Reportes avanzados", "Hasta 5 usuarios", "Soporte prioritario"],
   },
   annual: {
     label: "Plan Anual", color: "#7c3aed",
     bg: "#f5f3ff", border: "#ddd6fe",
     icon: <FaShieldAlt />,
-    features: ["2 meses gratis", "Cheques ilimitados", "Reportes completos", "Usuarios ilimitados", "Manager dedicado"],
   },
 };
 
@@ -69,6 +66,22 @@ export default function MiCuenta() {
     const s = localStorage.getItem("user");
     return s ? JSON.parse(s).token : null;
   };
+
+  // ── Features reales del plan desde la API ─────────────────
+  const [planFeatures, setPlanFeatures] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!user?.plan) return;
+    api.get("/plans")
+      .then((res) => {
+        const plans = Array.isArray(res.data) ? res.data
+          : Array.isArray(res.data?.data) ? res.data.data
+          : [];
+        const match = plans.find((p: any) => p.type === user.plan && p.isActive);
+        if (match?.features?.length) setPlanFeatures(match.features);
+      })
+      .catch(() => {});
+  }, [user?.plan]);
 
   const [showPwGate, setShowPwGate]       = useState(false);
   const [pwGateInput, setPwGateInput]     = useState("");
@@ -143,8 +156,6 @@ export default function MiCuenta() {
   const trialDaysLeft  = user.status === "trial" ? calcTrialDaysLeft(user.registeredAt, user.trialDays) : null;
   const registeredFmt  = new Date(user.registeredAt).toLocaleDateString("es-DO", { year: "numeric", month: "long", day: "numeric" });
   const expiresFmt     = user.planExpiresAt ? new Date(user.planExpiresAt).toLocaleDateString("es-DO", { year: "numeric", month: "long", day: "numeric" }) : null;
-
-  // ── Precio personalizado ──────────────────────────────────
   const customPriceNote = (user as any).customPriceNote as string | null | undefined;
 
   return (
@@ -282,14 +293,18 @@ export default function MiCuenta() {
               </div>
 
               <div style={{ flex: 1, minWidth: "190px" }}>
-                <p style={{ color: T.faint, fontSize: "0.68rem", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.75rem", fontWeight: 600 }}>Incluye</p>
-                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 1.25rem", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
-                  {planCfg.features.map((f, i) => (
-                    <li key={i} style={{ display: "flex", alignItems: "center", gap: "9px", color: T.text, fontSize: "0.87rem" }}>
-                      <FaCheckCircle style={{ color: planCfg.color, flexShrink: 0, fontSize: "0.68rem" }} />{f}
-                    </li>
-                  ))}
-                </ul>
+                {planFeatures.length > 0 && (
+                  <>
+                    <p style={{ color: T.faint, fontSize: "0.68rem", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.75rem", fontWeight: 600 }}>Incluye</p>
+                    <ul style={{ listStyle: "none", padding: 0, margin: "0 0 1.25rem", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
+                      {planFeatures.map((f, i) => (
+                        <li key={i} style={{ display: "flex", alignItems: "center", gap: "9px", color: T.text, fontSize: "0.87rem" }}>
+                          <FaCheckCircle style={{ color: planCfg.color, flexShrink: 0, fontSize: "0.68rem" }} />{f}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
 
                 {user.plan !== "annual" && (
                   <button onClick={() => navigate("/planes")} style={{

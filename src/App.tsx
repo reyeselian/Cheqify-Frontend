@@ -18,6 +18,8 @@ import { AuthProvider }   from "./context/AuthContext";
 import { ConfigProvider } from "./context/ConfigContext";
 import PrivateRoute from "./routes/PrivateRoute";
 import VerifyEmail from "./pages/Verifyemail";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword  from "./pages/ResetPassword";
 
 
 // ── Admin app ─────────────────────────────────────────────────
@@ -29,7 +31,7 @@ import AdminPlanes    from "./pages/admin/AdminPlanes";
 import { AdminProvider } from "./context/AdminContext";
 import AdminRoute       from "./routes/Adminroute";
 import AdminIngresos from "./pages/admin/Adminingresos";
-
+import AdminSolicitudes from "./pages/admin/AdminSolicitudes";
 export default function App() {
   return (
     <AuthProvider>
@@ -58,6 +60,7 @@ export default function App() {
                 <Route path="usuarios"  element={<AdminUsuarios />} />
                 <Route path="planes"    element={<AdminPlanes />} />
                 <Route path="ingresos" element={<AdminIngresos />} />
+                <Route path="solicitudes" element={<AdminSolicitudes />} />
                 
               </Route>
 
@@ -76,6 +79,8 @@ export default function App() {
                         <Route path="/register" element={<Register />} />
                         <Route path="/verify-email" element={<VerifyEmail />} />
                         <Route path="/planes"   element={<Planes />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/reset-password"  element={<ResetPassword />} />
 
                         <Route path="/mi-cuenta" element={<PrivateRoute><MiCuenta /></PrivateRoute>} />
                         <Route path="/home"         element={<PrivateRoute><Home /></PrivateRoute>} />

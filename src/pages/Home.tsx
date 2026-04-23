@@ -316,6 +316,7 @@ export default function Home() {
           <Table hover className="align-middle mb-0">
             <thead className="bg-dark text-white">
               <tr>
+                <th style={{ width: "50px" }}>#</th>
                 <th>No. Cheque</th>
                 <th>Banco</th>
                 <th>Beneficiario</th>
@@ -326,8 +327,13 @@ export default function Home() {
               </tr>
             </thead>
             <tbody>
-              {(showDeleted ? filteredCheques : filteredCheques.slice(0, 5)).map((c) => (
+              {(showDeleted ? filteredCheques : filteredCheques.slice(0, 5)).map((c, index) => (
                 <tr key={c._id}>
+                  <td>
+                    <span style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", width:"26px", height:"26px", borderRadius:"50%", background:"linear-gradient(145deg,#333,#555)", color:"#fff", fontSize:"0.72rem", fontWeight:700 }}>
+                      {index + 1}
+                    </span>
+                  </td>
                   <td>{c.numero}</td>
                   <td>{c.banco}</td>
                   <td>{c.beneficiario}</td>

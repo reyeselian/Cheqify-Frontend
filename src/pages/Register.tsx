@@ -21,8 +21,8 @@ interface IPlanAPI {
 
 const PLAN_META: Record<PlanType, { color: string; icon: string; badge?: string; period: string }> = {
   trial:   { color: "#0ea5e9", icon: "🚀", period: "" },
-  monthly: { color: "#f59e0b", icon: "📅", period: "/ mes", badge: "Popular" },
-  annual:  { color: "#8b5cf6", icon: "⚡", period: "/ año", badge: "Mejor valor" },
+  monthly: { color: "#f59e0b", icon: "📅", period: "USD / mes", badge: "Popular" },
+  annual:  { color: "#8b5cf6", icon: "⚡", period: "USD / año", badge: "Mejor valor" },
 };
 
 const STYLES = `
@@ -93,7 +93,6 @@ const STYLES = `
   .step-line { width: 50px; height: 2px; background: #e2e8f0; transition: background 0.35s ease; }
   .step-line.done { background: #0ea5e9; }
 
-  /* ── PLANES ── */
   .plans-wrapper { width: 100%; max-width: 900px; animation: fadeUp 0.45s ease both; position: relative; z-index: 1; }
   .plans-title { font-family: 'Raleway', sans-serif; font-size: 1.4rem; font-weight: 800; color: #0f172a; text-align: center; margin-bottom: 0.25rem; }
   .plans-subtitle { color: #64748b; font-size: 0.9rem; text-align: center; margin-bottom: 1rem; }
@@ -171,7 +170,6 @@ const STYLES = `
 
   .plans-error { text-align: center; color: #ef4444; background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 0.8rem 1.2rem; font-size: 0.875rem; margin-bottom: 1rem; }
 
-  /* ── FORM ── */
   .form-wrapper { width: 100%; max-width: 460px; animation: fadeUp 0.45s ease both; position: relative; z-index: 1; }
   .form-card { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 22px; padding: 1.6rem; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
   .form-title { font-family: 'Raleway', sans-serif; font-size: 1.3rem; font-weight: 800; color: #0f172a; margin-bottom: 0.2rem; }
@@ -202,6 +200,7 @@ const STYLES = `
   }
   .field-input::placeholder { color: #cbd5e1; }
   .field-input:focus { border-color: #0ea5e9; background: #fff; box-shadow: 0 0 0 3px rgba(14,165,233,0.1); }
+  .field-input.error { border-color: #ef4444; background: #fff; }
   .field-input.has-toggle { padding-right: 2.8rem; }
   .toggle-pass {
     position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
@@ -254,7 +253,6 @@ const STYLES = `
   .login-link a { color: #0ea5e9; text-decoration: none; font-weight: 600; }
   .login-link a:hover { text-decoration: underline; }
 
-  /* ── Verificación ── */
   .ve-root { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f0f2f5; font-family: 'Raleway', sans-serif; padding: 2rem 1rem; }
   .ve-card { background: #fff; border-radius: 24px; padding: 2.8rem 2.4rem; max-width: 460px; width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.09); animation: fadeUp 0.4s ease both; }
   .ve-icon { width: 72px; height: 72px; border-radius: 50%; background: #f0fdf4; border: 2px solid #a7f3d0; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.5rem; }
@@ -275,21 +273,23 @@ const STYLES = `
 
 const Register: React.FC = () => {
 
-  const [step, setStep]                       = useState<1 | 2>(1);
-  const [plans, setPlans]                     = useState<IPlanAPI[]>([]);
-  const [plansLoading, setPlansLoading]       = useState(true);
-  const [plansError, setPlansError]           = useState("");
-  const [selectedPlan, setSelectedPlan]       = useState<IPlanAPI | null>(null);
-  const [empresa, setEmpresa]                 = useState("");
-  const [email, setEmail]                     = useState("");
-  const [password, setPassword]               = useState("");
-  const [errorMsg, setErrorMsg]               = useState("");
-  const [loading, setLoading]                 = useState(false);
-  const [showPass, setShowPass]               = useState(false);
-  const [registered, setRegistered]           = useState(false);
-  const [registeredEmail, setRegisteredEmail] = useState("");
-  const [resending, setResending]             = useState(false);
-  const [resendMsg, setResendMsg]             = useState("");
+  const [step, setStep]                         = useState<1 | 2>(1);
+  const [plans, setPlans]                       = useState<IPlanAPI[]>([]);
+  const [plansLoading, setPlansLoading]         = useState(true);
+  const [plansError, setPlansError]             = useState("");
+  const [selectedPlan, setSelectedPlan]         = useState<IPlanAPI | null>(null);
+  const [empresa, setEmpresa]                   = useState("");
+  const [email, setEmail]                       = useState("");
+  const [password, setPassword]                 = useState("");
+  const [confirmPassword, setConfirmPassword]   = useState("");
+  const [errorMsg, setErrorMsg]                 = useState("");
+  const [loading, setLoading]                   = useState(false);
+  const [showPass, setShowPass]                 = useState(false);
+  const [showConfirmPass, setShowConfirmPass]   = useState(false);
+  const [registered, setRegistered]             = useState(false);
+  const [registeredEmail, setRegisteredEmail]   = useState("");
+  const [resending, setResending]               = useState(false);
+  const [resendMsg, setResendMsg]               = useState("");
 
   useEffect(() => {
     axios.get(`${API_URL}/plans`)
@@ -304,6 +304,13 @@ const Register: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPlan) return;
+
+    // ✅ Validar que las contraseñas coincidan
+    if (password !== confirmPassword) {
+      setErrorMsg("Las contraseñas no coinciden. Por favor verifica.");
+      return;
+    }
+
     setLoading(true);
     setErrorMsg("");
     try {
@@ -468,6 +475,7 @@ const Register: React.FC = () => {
                         value={empresa} onChange={(e) => setEmpresa(e.target.value)} required />
                     </div>
                   </div>
+
                   <div className="field-group">
                     <label className="field-label">Correo electrónico</label>
                     <div className="field-input-wrap">
@@ -475,17 +483,51 @@ const Register: React.FC = () => {
                         value={email} onChange={(e) => setEmail(e.target.value)} required />
                     </div>
                   </div>
+
                   <div className="field-group">
                     <label className="field-label">Contraseña</label>
                     <div className="field-input-wrap">
-                      <input className="field-input has-toggle" type={showPass ? "text" : "password"}
-                        placeholder="Mínimo 8 caracteres" value={password}
-                        onChange={(e) => setPassword(e.target.value)} required minLength={8} />
+                      <input
+                        className={`field-input has-toggle ${confirmPassword && password !== confirmPassword ? "error" : ""}`}
+                        type={showPass ? "text" : "password"}
+                        placeholder="Mínimo 8 caracteres"
+                        value={password}
+                        onChange={(e) => { setPassword(e.target.value); setErrorMsg(""); }}
+                        required minLength={8}
+                      />
                       <button type="button" className="toggle-pass" onClick={() => setShowPass(!showPass)}>
                         {showPass ? "🙈" : "👁"}
                       </button>
                     </div>
                   </div>
+
+                  <div className="field-group">
+                    <label className="field-label">Confirmar contraseña</label>
+                    <div className="field-input-wrap">
+                      <input
+                        className={`field-input has-toggle ${confirmPassword && password !== confirmPassword ? "error" : ""}`}
+                        type={showConfirmPass ? "text" : "password"}
+                        placeholder="Repite tu contraseña"
+                        value={confirmPassword}
+                        onChange={(e) => { setConfirmPassword(e.target.value); setErrorMsg(""); }}
+                        required minLength={8}
+                      />
+                      <button type="button" className="toggle-pass" onClick={() => setShowConfirmPass(!showConfirmPass)}>
+                        {showConfirmPass ? "🙈" : "👁"}
+                      </button>
+                    </div>
+                    {confirmPassword && password !== confirmPassword && (
+                      <p style={{ color: "#ef4444", fontSize: "0.75rem", marginTop: "4px" }}>
+                        ⚠️ Las contraseñas no coinciden
+                      </p>
+                    )}
+                    {confirmPassword && password === confirmPassword && (
+                      <p style={{ color: "#059669", fontSize: "0.75rem", marginTop: "4px" }}>
+                        ✓ Las contraseñas coinciden
+                      </p>
+                    )}
+                  </div>
+
                   <button type="submit" className="btn-submit" disabled={loading}>
                     {loading && <span className="spinner" />}
                     {loading ? "Creando cuenta..." : "Crear cuenta"}

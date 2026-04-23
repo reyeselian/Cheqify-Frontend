@@ -20,7 +20,6 @@ const formatDateForInput = (date: string | Date | undefined) => {
 };
 
 export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props) {
-  // ✅ Obtener usuario actual desde localStorage
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const [form, setForm] = useState({
@@ -32,7 +31,6 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
     corbata: 0,
     firmadoPor: "",
     notas: "",
-    // ❌ fechaCheque eliminada del estado (la pone el backend)
     fechaDeposito: "",
     usuario: user._id || "",
     company: user.empresa || "",
@@ -53,7 +51,6 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
         corbata: cheque.corbata || 0,
         firmadoPor: cheque.firmadoPor || "",
         notas: cheque.notas || "",
-        // ❌ ya no seteamos fechaCheque, solo fechaDeposito
         fechaDeposito: formatDateForInput(cheque.fechaDeposito),
         usuario: user._id || "",
         company: user.company || "",
@@ -84,7 +81,7 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
     const { name, value } = e.target;
     setForm({
       ...form,
-      [name]: name === "monto" || name === "corbata" ? Number(value) : value,
+      [name]: name === "corbata" ? Number(value) : name === "monto" ? value : value,
     });
   };
 
@@ -102,12 +99,24 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
     e.preventDefault();
     setLoading(true);
 
-    // ✅ Validación básica (fechaCheque ya no es requerida)
-    if (!form.numero || !form.banco || !form.beneficiario || !form.monto) {
-      toast.error("Por favor completa todos los campos requeridos.");
-      setLoading(false);
-      return;
+    // ✅ Bloquear creación de cheques nuevos si el plan no lo permite
+    if (!cheque) {
+      const blockedStatuses = ["trial_expired", "payment_required", "blocked"];
+      if (blockedStatuses.includes(user.status)) {
+        toast.error("⛔ No puedes agregar nuevos cheques. Actualiza tu plan.");
+        setLoading(false);
+        return;
+      }
     }
+
+    // ✅ Validación de todos los campos obligatorios (imagen es opcional)
+    if (!form.numero.toString().trim()) { toast.error("El número de cheque es obligatorio."); setLoading(false); return; }
+    if (!form.banco.toString().trim()) { toast.error("El banco es obligatorio."); setLoading(false); return; }
+    if (!form.beneficiario.toString().trim()) { toast.error("El beneficiario es obligatorio."); setLoading(false); return; }
+    if (!form.monto || Number(form.monto) <= 0) { toast.error("El monto debe ser mayor a 0."); setLoading(false); return; }
+    if (!form.fechaDeposito) { toast.error("La fecha de depósito es obligatoria."); setLoading(false); return; }
+    if (!form.firmadoPor.toString().trim()) { toast.error("El campo Firmado por es obligatorio."); setLoading(false); return; }
+    if (!form.notas.toString().trim()) { toast.error("El concepto es obligatorio."); setLoading(false); return; }
 
     // ✅ Validar que exista usuario
     if (!user) {
@@ -141,7 +150,6 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
         formData.append(key, String(value));
     });
 
-    // ✅ Asegurarse de incluir usuario y empresa antes del envío
     formData.set("usuario", user._id);
     formData.set("company", user.company);
 
@@ -153,20 +161,14 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
           headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("💾 Cheque actualizado correctamente.", {
-          style: {
-            background: "linear-gradient(135deg, #1f1f1f, #3a3a3a)",
-            color: "#e6e6e6",
-          },
+          style: { background: "linear-gradient(135deg, #1f1f1f, #3a3a3a)", color: "#e6e6e6" },
         });
       } else {
         await api.post("/cheques", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("✅ Cheque registrado exitosamente.", {
-          style: {
-            background: "linear-gradient(135deg, #1f1f1f, #3a3a3a)",
-            color: "#e6e6e6",
-          },
+          style: { background: "linear-gradient(135deg, #1f1f1f, #3a3a3a)", color: "#e6e6e6" },
         });
       }
 
@@ -194,50 +196,25 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
             <Col md={3}>
               <Form.Group>
                 <Form.Label>Número</Form.Label>
-                <Form.Control
-                  name="numero"
-                  value={form.numero}
-                  onChange={handleChange}
-                  placeholder="Ej: 001245"
-                  required
-                />
+                <Form.Control name="numero" value={form.numero} onChange={handleChange} placeholder="Ej: 001245" required />
               </Form.Group>
             </Col>
             <Col md={3}>
               <Form.Group>
                 <Form.Label>Banco</Form.Label>
-                <Form.Control
-                  name="banco"
-                  value={form.banco}
-                  onChange={handleChange}
-                  placeholder="Nombre del banco"
-                  required
-                />
+                <Form.Control name="banco" value={form.banco} onChange={handleChange} placeholder="Nombre del banco" required />
               </Form.Group>
             </Col>
             <Col md={3}>
               <Form.Group>
                 <Form.Label>Beneficiario</Form.Label>
-                <Form.Control
-                  name="beneficiario"
-                  value={form.beneficiario}
-                  onChange={handleChange}
-                  placeholder="A nombre de..."
-                  required
-                />
+                <Form.Control name="beneficiario" value={form.beneficiario} onChange={handleChange} placeholder="A nombre de..." required />
               </Form.Group>
             </Col>
             <Col md={3}>
               <Form.Group>
                 <Form.Label>Monto</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="monto"
-                  value={form.monto}
-                  onChange={handleChange}
-                  placeholder="0"
-                  required
-                />
+                <Form.Control type="number" step="0.01" min="0" name="monto" value={form.monto} onChange={handleChange} placeholder="0.00" required />
               </Form.Group>
             </Col>
           </Row>
@@ -246,11 +223,7 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
             <Col md={3}>
               <Form.Group>
                 <Form.Label>Estado</Form.Label>
-                <Form.Select
-                  name="estado"
-                  value={form.estado}
-                  onChange={handleChange}
-                >
+                <Form.Select name="estado" value={form.estado} onChange={handleChange}>
                   <option value="pendiente">Pendiente</option>
                   <option value="cobrado">Cobrado</option>
                   <option value="devuelto">Devuelto</option>
@@ -260,86 +233,42 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
             <Col md={3}>
               <Form.Group>
                 <Form.Label>Corbata (días)</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="corbata"
-                  value={form.corbata}
-                  onChange={handleChange}
-                />
+                <Form.Control type="number" name="corbata" value={form.corbata} onChange={handleChange} />
               </Form.Group>
             </Col>
             <Col md={3}>
               <Form.Group>
                 <Form.Label>Fecha de Depósito</Form.Label>
-                <Form.Control
-                  type="date"
-                  name="fechaDeposito"
-                  value={form.fechaDeposito}
-                  onChange={handleChange}
-                />
+                <Form.Control type="date" name="fechaDeposito" value={form.fechaDeposito} onChange={handleChange} />
               </Form.Group>
             </Col>
-            {/* <Col md={3} className="d-flex align-items-end">
-              <div style={{ fontSize: "0.85rem", color: "#555" }}>
-                <strong>Fecha del cheque:</strong>{" "}
-                {cheque
-                  ? formatDateForInput(cheque.fechaCheque || cheque.fechaEmision)
-                  : "Se usará la fecha actual del sistema"}
-              </div>
-            </Col> */}
           </Row>
 
           <Row className="mb-3">
             <Col md={6}>
               <Form.Group>
                 <Form.Label>Firmado por</Form.Label>
-                <Form.Control
-                  name="firmadoPor"
-                  value={form.firmadoPor}
-                  onChange={handleChange}
-                  placeholder="Ej: Juan Pérez"
-                />
+                <Form.Control name="firmadoPor" value={form.firmadoPor} onChange={handleChange} placeholder="Ej: Juan Pérez" />
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group>
                 <Form.Label>Concepto</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={2}
-                  name="notas"
-                  value={form.notas}
-                  onChange={handleChange}
-                  placeholder="Comentarios o detalles del cheque"
-                />
+                <Form.Control as="textarea" rows={2} name="notas" value={form.notas} onChange={handleChange} placeholder="Comentarios o detalles del cheque" />
               </Form.Group>
             </Col>
           </Row>
 
-          {/* Subida de imagen */}
           <Row className="mt-3">
             <Col md={12}>
               <Form.Group>
                 <Form.Label>Imagen del Cheque (opcional)</Form.Label>
-                <Form.Control
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
+                <Form.Control type="file" accept="image/*" onChange={handleImageChange} />
               </Form.Group>
               {preview && (
                 <div className="mt-3 text-center">
-                  <Image
-                    src={preview}
-                    alt="Vista previa del cheque"
-                    fluid
-                    rounded
-                    style={{
-                      maxHeight: "220px",
-                      objectFit: "contain",
-                      border: "2px solid #ccc",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-                    }}
+                  <Image src={preview} alt="Vista previa del cheque" fluid rounded
+                    style={{ maxHeight: "220px", objectFit: "contain", border: "2px solid #ccc", boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}
                   />
                 </div>
               )}
@@ -349,35 +278,14 @@ export default function ChequeForm({ show, handleClose, cheque, onSaved }: Props
 
         <Modal.Footer
           className="d-flex justify-content-between"
-          style={{
-            background: "linear-gradient(135deg, #1a1a1a, #333, #1f1f1f)",
-            borderTop: "1px solid #555",
-          }}
+          style={{ background: "linear-gradient(135deg, #1a1a1a, #333, #1f1f1f)", borderTop: "1px solid #555" }}
         >
-          <Button
-            variant="secondary"
-            onClick={handleClose}
-            style={{
-              border: "none",
-              background: "linear-gradient(145deg, #6c757d, #adb5bd)",
-              color: "#fff",
-              fontWeight: "bold",
-            }}
-          >
+          <Button variant="secondary" onClick={handleClose}
+            style={{ border: "none", background: "linear-gradient(145deg, #6c757d, #adb5bd)", color: "#fff", fontWeight: "bold" }}>
             Cancelar
           </Button>
-
-          <Button
-            type="submit"
-            disabled={loading}
-            style={{
-              background: "linear-gradient(145deg, #1a1a1a, #3c3c3c)",
-              border: "none",
-              color: "#fff",
-              fontWeight: "bold",
-              boxShadow: "0 4px 10px rgba(0,0,0,0.4)",
-            }}
-          >
+          <Button type="submit" disabled={loading}
+            style={{ background: "linear-gradient(145deg, #1a1a1a, #3c3c3c)", border: "none", color: "#fff", fontWeight: "bold", boxShadow: "0 4px 10px rgba(0,0,0,0.4)" }}>
             {loading ? "Guardando..." : "Guardar"}
           </Button>
         </Modal.Footer>

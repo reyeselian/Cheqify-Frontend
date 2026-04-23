@@ -56,33 +56,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   /* ── Verificación periódica de status ──────────────────── */
   useEffect(() => {
     if (!user) {
-      // Si no hay usuario, limpiar intervalo
       if (intervalRef.current) clearInterval(intervalRef.current);
       return;
     }
 
     const checkStatus = async () => {
       try {
-      const { data } = await api.get("/auth/me", {
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
+        const { data } = await api.get("/auth/me", {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
 
-      if (data.status === "blocked") {
-        logout();
-        return;
+        // Ya no cerramos sesión al bloquear — solo actualizamos el status
+
+        // Actualizar todos los campos que el admin puede cambiar
+        updateUser({
+          status:          data.status,
+          plan:            data.plan,
+          trialDays:       data.trialDays,
+          planExpiresAt:   data.planExpiresAt,
+          registeredAt:    data.registeredAt,
+          customPriceNote: data.customPriceNote ?? null,
+        } as any);
+
+      } catch {
+        // Si el token expiró o hay error 401, cerrar sesión
       }
-
-      // Actualizar siempre por si cambió algún campo
-      updateUser({
-        status:          data.status,
-        planExpiresAt:   data.planExpiresAt,
-        customPriceNote: data.customPriceNote ?? null,
-      } as any);
-
-    } catch {
-      // Si el token expiró o hay error 401, cerrar sesión
-    }
-};
+    };
 
     // Verificar inmediatamente y luego cada 30 segundos
     checkStatus();

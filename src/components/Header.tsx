@@ -65,12 +65,16 @@ export default function Header() {
             <FaBars />
           </Button>
 
-          {/* Nav links */}
+          {/* Nav links — solo visibles con sesión iniciada */}
           <Navbar.Collapse id="basic-navbar-nav" className="justify-content-center text-center">
             <Nav className="mx-auto gap-3">
-              <Nav.Link href="/"         style={{ color: textColor }} className="fw-semibold nav-premium">Inicio</Nav.Link>
-              <Nav.Link href="/cheques"  style={{ color: textColor }} className="fw-semibold nav-premium">Cheques</Nav.Link>
-              <Nav.Link href="/reportes" style={{ color: textColor }} className="fw-semibold nav-premium">Reportes</Nav.Link>
+              {user && (
+                <>
+                  <Nav.Link href="/"         style={{ color: textColor }} className="fw-semibold nav-premium">Inicio</Nav.Link>
+                  <Nav.Link href="/cheques"  style={{ color: textColor }} className="fw-semibold nav-premium">Cheques</Nav.Link>
+                  <Nav.Link href="/reportes" style={{ color: textColor }} className="fw-semibold nav-premium">Reportes</Nav.Link>
+                </>
+              )}
             </Nav>
           </Navbar.Collapse>
 
@@ -93,7 +97,6 @@ export default function Header() {
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
-                  {/* Info — no clickeable */}
                   <Dropdown.Item disabled className="text-muted small">
                     <FaBuilding className="me-2" />
                     {user.email}
@@ -101,7 +104,6 @@ export default function Header() {
 
                   <Dropdown.Divider />
 
-                  {/* ✅ Mi Cuenta */}
                   <Dropdown.Item
                     onClick={() => navigate("/mi-cuenta")}
                     className="fw-semibold d-flex align-items-center gap-2"
@@ -113,7 +115,6 @@ export default function Header() {
 
                   <Dropdown.Divider />
 
-                  {/* Cerrar sesión */}
                   <Dropdown.Item
                     onClick={() => { logout(); navigate("/login"); }}
                     className="text-danger fw-semibold d-flex align-items-center gap-2"

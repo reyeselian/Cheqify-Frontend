@@ -1,24 +1,18 @@
 // src/pages/admin/AdminLayout.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { useAdmin } from "../../context/AdminContext";
+import axios from "axios";
 import {
   FaTachometerAlt, FaUsers, FaCreditCard,
-  FaSignOutAlt, FaShieldAlt, FaBars, FaChartLine,
+  FaSignOutAlt, FaShieldAlt, FaBars, FaChartLine, FaBell,
 } from "react-icons/fa";
 
 const FONT = "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap";
-
-const NAV_ITEMS = [
-  { label: "Dashboard",  path: "/admin/dashboard", icon: <FaTachometerAlt /> },
-  { label: "Usuarios",   path: "/admin/usuarios",  icon: <FaUsers /> },
-  { label: "Planes",     path: "/admin/planes",    icon: <FaCreditCard /> },
-  { label: "Ingresos",   path: "/admin/ingresos",  icon: <FaChartLine /> },
-];
+const API  = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const S = {
   sidebar: { width: "240px", bg: "#0f172a", border: "rgba(255,255,255,0.06)" },
-  accent: "#6366f1",
 };
 
 export default function AdminLayout() {
@@ -26,6 +20,23 @@ export default function AdminLayout() {
   const navigate  = useNavigate();
   const location  = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [pendientes, setPendientes] = useState(0);
+
+  // Contar solicitudes pendientes al cargar y al cambiar de página
+  useEffect(() => {
+    if (!admin?.token) return;
+    axios.get(`${API}/plan-requests/admin?status=pendiente&limit=1`, {
+      headers: { Authorization: `Bearer ${admin.token}` },
+    }).then(({ data }) => setPendientes(data.total ?? 0)).catch(() => {});
+  }, [admin?.token, location.pathname]);
+
+  const NAV_ITEMS = [
+    { label: "Dashboard",   path: "/admin/dashboard",   icon: <FaTachometerAlt />, badge: null },
+    { label: "Usuarios",    path: "/admin/usuarios",    icon: <FaUsers />,         badge: null },
+    { label: "Planes",      path: "/admin/planes",      icon: <FaCreditCard />,    badge: null },
+    { label: "Ingresos",    path: "/admin/ingresos",    icon: <FaChartLine />,     badge: null },
+    { label: "Solicitudes", path: "/admin/solicitudes", icon: <FaBell />,          badge: pendientes > 0 ? pendientes : null },
+  ];
 
   const handleLogout = () => { adminLogout(); navigate("/admin/login"); };
 
@@ -60,7 +71,12 @@ export default function AdminLayout() {
               onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "rgba(255,255,255,0.45)"; } }}
             >
               <span style={{ fontSize: "0.85rem" }}>{item.icon}</span>
-              {item.label}
+              <span style={{ flex: 1 }}>{item.label}</span>
+              {item.badge !== null && (
+                <span style={{ background: "#ef4444", color: "#fff", fontSize: "0.65rem", fontWeight: 700, padding: "1px 7px", borderRadius: "20px", minWidth: "20px", textAlign: "center" }}>
+                  {item.badge}
+                </span>
+              )}
             </button>
           );
         })}
@@ -86,6 +102,8 @@ export default function AdminLayout() {
     </div>
   );
 
+  const currentLabel = NAV_ITEMS.find((n) => n.path === location.pathname)?.label ?? "Admin";
+
   return (
     <>
       <link rel="stylesheet" href={FONT} />
@@ -109,13 +127,18 @@ export default function AdminLayout() {
               <FaBars />
             </button>
             <div>
-              <h2 style={{ margin: 0, color: "#0f172a", fontSize: "1rem", fontWeight: 700 }}>
-                {NAV_ITEMS.find((n) => n.path === location.pathname)?.label ?? "Admin"}
-              </h2>
+              <h2 style={{ margin: 0, color: "#0f172a", fontSize: "1rem", fontWeight: 700 }}>{currentLabel}</h2>
               <p style={{ margin: 0, color: "#94a3b8", fontSize: "0.75rem" }}>Panel de administración · Cheqify</p>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.15)", borderRadius: "20px", padding: "4px 12px", fontSize: "0.75rem", color: "#6366f1", fontWeight: 600 }}>
-              <FaShieldAlt size={10} /> Admin
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              {pendientes > 0 && (
+                <div onClick={() => navigate("/admin/solicitudes")} style={{ display: "flex", alignItems: "center", gap: "6px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "20px", padding: "4px 12px", fontSize: "0.75rem", color: "#dc2626", fontWeight: 600, cursor: "pointer" }}>
+                  <FaBell size={10} /> {pendientes} solicitud{pendientes !== 1 ? "es" : ""}
+                </div>
+              )}
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.15)", borderRadius: "20px", padding: "4px 12px", fontSize: "0.75rem", color: "#6366f1", fontWeight: 600 }}>
+                <FaShieldAlt size={10} /> Admin
+              </div>
             </div>
           </header>
 
