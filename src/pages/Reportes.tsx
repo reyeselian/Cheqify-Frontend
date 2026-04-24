@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
 import {
   Card,
@@ -30,6 +32,10 @@ import { Chart, ArcElement, DoughnutController, Tooltip as CJTooltip } from "cha
 Chart.register(ArcElement, DoughnutController, CJTooltip);
 
 export default function Reportes() {
+  const { user } = useAuth();
+  const navigate  = useNavigate();
+  const isBlocked = user ? ["trial_expired", "payment_required", "blocked"].includes(user.status) : false;
+
   const [cheques, setCheques] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const gaugeRef = useRef<HTMLCanvasElement>(null);
@@ -182,6 +188,42 @@ export default function Reportes() {
     { name: "Cobrados",   monto: montoCobrados   },
     { name: "Devueltos",  monto: montoDevueltos  },
   ];
+
+  // ── Pantalla de bloqueo ─────────────────────────────────
+  if (isBlocked) {
+    return (
+      <Container className="p-3">
+        <div style={{
+          minHeight: "60vh", display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center", textAlign: "center", gap: "1rem",
+        }}>
+          <div style={{ fontSize: "3.5rem" }}>🔒</div>
+          <h4 style={{ fontWeight: 700, color: "#1a1d23", margin: 0 }}>
+            {user?.status === "blocked" ? "Cuenta bloqueada" : "Prueba vencida"}
+          </h4>
+          <p style={{ color: "#6b7280", fontSize: "0.95rem", maxWidth: "360px", margin: 0 }}>
+            {user?.status === "blocked"
+              ? "Contacta al administrador para desbloquear tu cuenta."
+              : "Actualiza tu plan para acceder a los reportes y estadísticas de tus cheques."}
+          </p>
+          {user?.status !== "blocked" && (
+            <button
+              onClick={() => navigate("/planes")}
+              style={{
+                background: "linear-gradient(135deg, #c58b2a, #e8c47a)",
+                border: "none", borderRadius: "10px",
+                color: "#111", fontWeight: 700, fontSize: "0.9rem",
+                padding: "10px 24px", cursor: "pointer",
+                boxShadow: "0 4px 14px rgba(197,139,42,0.3)",
+              }}
+            >
+              🚀 Ver Planes
+            </button>
+          )}
+        </div>
+      </Container>
+    );
+  }
 
   return (
     <Container className="p-3">
