@@ -4,10 +4,7 @@ import { api } from "../services/api";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-/* =========================================================
-   Tipos
-========================================================= */
-export type PlanType     = "trial" | "monthly" | "annual";
+export type PlanType      = "trial" | "monthly" | "annual";
 export type AccountStatus = "trial" | "trial_expired" | "active" | "payment_required" | "blocked";
 
 export interface User {
@@ -34,20 +31,19 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export const useAuth = () => useContext(AuthContext);
 
-/* =========================================================
-   Intervalo de verificación: cada 30 segundos
-========================================================= */
 const STATUS_CHECK_INTERVAL = 30_000;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const intervalRef     = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [user, setUser]     = useState<User | null>(null);
+  const intervalRef         = useRef<ReturnType<typeof setInterval> | null>(null);
+  const currentTokenRef     = useRef<string | null>(null);
 
   /* ── Restaurar sesión desde localStorage ───────────────── */
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsed: User = JSON.parse(storedUser);
+      currentTokenRef.current = parsed.token;
       setUser(parsed);
       axios.defaults.headers.common["Authorization"] = `Bearer ${parsed.token}`;
     }
@@ -61,29 +57,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const checkStatus = async () => {
+      const tokenToUse = currentTokenRef.current;
+      // ✅ Si el token cambió (otro usuario inició sesión), cancelar
+      if (!tokenToUse || tokenToUse !== user.token) return;
+
       try {
         const { data } = await api.get("/auth/me", {
-          headers: { Authorization: `Bearer ${user.token}` },
+          headers: { Authorization: `Bearer ${tokenToUse}` },
         });
 
-        // Ya no cerramos sesión al bloquear — solo actualizamos el status
+        // ✅ Verificar nuevamente después del await por si cambió
+        if (currentTokenRef.current !== tokenToUse) return;
 
-        // Actualizar todos los campos que el admin puede cambiar
-        updateUser({
-          status:          data.status,
-          plan:            data.plan,
-          trialDays:       data.trialDays,
-          planExpiresAt:   data.planExpiresAt,
-          registeredAt:    data.registeredAt,
-          customPriceNote: data.customPriceNote ?? null,
-        } as any);
+        // ✅ Verificar que el _id coincida con el usuario en sesión
+        // Si no coincide, significa que hay datos de otro usuario — limpiar y cerrar sesión
+        setUser((prev) => {
+          if (!prev) return prev;
+          if (data._id && data._id !== prev._id) {
+            // Datos de otro usuario detectados — ignorar actualización
+            return prev;
+          }
+          const updated = {
+            ...prev,
+            status:          data.status,
+            plan:            data.plan,
+            trialDays:       data.trialDays,
+            planExpiresAt:   data.planExpiresAt,
+            registeredAt:    data.registeredAt,
+            customPriceNote: data.customPriceNote ?? null,
+          };
+          localStorage.setItem("user", JSON.stringify(updated));
+          return updated;
+        });
 
       } catch {
-        // Si el token expiró o hay error 401, cerrar sesión
+        // Token expirado u otro error — no hacer nada
       }
     };
 
-    // Verificar inmediatamente y luego cada 30 segundos
     checkStatus();
     intervalRef.current = setInterval(checkStatus, STATUS_CHECK_INTERVAL);
 
@@ -94,8 +105,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   /* ── Login ──────────────────────────────────────────────── */
   const login = async (email: string, password: string) => {
+    // ✅ Limpiar sesión anterior completamente antes de iniciar la nueva
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    currentTokenRef.current = null;
+    setUser(null);
+    localStorage.clear();
+
     const res = await api.post("/auth/login", { email, password });
     const userData: User = res.data;
+
+    currentTokenRef.current = userData.token;
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("token", userData.token);
     axios.defaults.headers.common["Authorization"] = `Bearer ${userData.token}`;
@@ -113,9 +132,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   /* ── Logout ─────────────────────────────────────────────── */
   const logout = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
+    currentTokenRef.current = null;
     setUser(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    localStorage.clear(); // ✅ limpiar TODO para no dejar rastros del usuario anterior
     delete axios.defaults.headers.common["Authorization"];
   };
 
