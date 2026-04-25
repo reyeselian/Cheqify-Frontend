@@ -293,9 +293,9 @@ export default function Home() {
             }}
           >
             <Card.Body className="py-2 px-2">
-              <h6 className="text-muted mb-0" style={{ fontSize: "0.72rem" }}>{item.label}</h6>
-              <h5 className={`fw-bold text-${item.color} mb-0`}>{item.count}</h5>
-              <small className="text-muted" style={{ fontSize: "0.68rem" }}>{formatCurrency(item.amount)}</small>
+              <h5 className="text-muted mb-0" style={{ fontSize: "0.72rem" }}>{item.label}</h5>
+              <h4 className={`fw-bold text-${item.color} mb-0`}>{item.count}</h4>
+              <small className="text-muted" style={{ fontSize: "0.72rem" }}>{formatCurrency(item.amount)}</small>
             </Card.Body>
           </Card>
         ))}
