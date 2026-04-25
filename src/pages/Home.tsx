@@ -233,7 +233,7 @@ export default function Home() {
 
   return (
     // ✅ Sin scroll — todo el contenido cabe en pantalla
-    <div className="px-3 pt-2 pb-2" style={{ overflow: "hidden", height: "calc(100vh - 70px)" }}>
+    <div className="px-3 pt-2 pb-2">
       {/* HEADER — menos margen arriba */}
       <div className="d-flex justify-content-between align-items-center mb-2">
         {/* 🎨 BOTÓN METÁLICO PREMIUM — más compacto */}
