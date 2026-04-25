@@ -233,7 +233,7 @@ export default function Home() {
 
   return (
     // ✅ Sin scroll — todo el contenido cabe en pantalla
-    <div className="px-3 pt-1 pb-2" style={{ overflow: "hidden", height: "calc(100vh - 70px)" }}>
+    <div className="px-3 pt-2 pb-2" style={{ overflow: "hidden", height: "calc(100vh - 70px)" }}>
       {/* HEADER — menos margen arriba */}
       <div className="d-flex justify-content-between align-items-center mb-2">
         {/* 🎨 BOTÓN METÁLICO PREMIUM — más compacto */}
@@ -293,9 +293,9 @@ export default function Home() {
             }}
           >
             <Card.Body className="py-2 px-2">
-              <h5 className="text-muted mb-0" style={{ fontSize: "0.72rem" }}>{item.label}</h5>
+              <h6 className="text-muted mb-1" style={{ fontSize: "0.8rem" }}>{item.label}</h6>
               <h4 className={`fw-bold text-${item.color} mb-0`}>{item.count}</h4>
-              <small className="text-muted" style={{ fontSize: "0.72rem" }}>{formatCurrency(item.amount)}</small>
+              <small className="text-muted" style={{ fontSize: "0.75rem" }}>{formatCurrency(item.amount)}</small>
             </Card.Body>
           </Card>
         ))}

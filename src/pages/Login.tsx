@@ -30,9 +30,7 @@ const Login: React.FC = () => {
       style={{
         height: "100vh",
         overflow: "hidden",
-        // ✅ En Electron no hay header, centrar perfectamente
-        // En web hay header de 70px, compensar
-        paddingTop: isElectron ? "0" : "70px",
+        marginTop: isElectron ? "0" : "-70px",
       }}
     >
       <Card
