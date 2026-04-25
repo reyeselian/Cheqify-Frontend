@@ -2,10 +2,13 @@ import React, { useState } from "react";
 import { Card, Form, Button, Alert } from "react-bootstrap";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useIsElectron } from "../hooks/useIsElectron";
 
 const Login: React.FC = () => {
   const { login } = useAuth();
-  const navigate = useNavigate();
+  const navigate   = useNavigate();
+  const isElectron = useIsElectron();
+
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage]   = useState("");
@@ -22,12 +25,15 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="d-flex align-items-center justify-content-center bg-light" style={{ minHeight: "100vh", paddingTop: "2rem", paddingBottom: "2rem" }}>
+    <div
+      className="d-flex align-items-center justify-content-center bg-light"
+      style={{ height: "100vh", overflow: "hidden" }}
+    >
       <Card
         className="p-4 shadow-lg text-center"
         style={{ maxWidth: "400px", width: "100%", borderRadius: "1rem" }}
       >
-        {/* Logo */}
+        {/* 🌟 Logo metálico animado */}
         <h1
           className="cheqify-logo-text mb-3"
           style={{ fontWeight: 800, fontSize: "2.8rem", letterSpacing: "0.5px" }}
@@ -78,12 +84,15 @@ const Login: React.FC = () => {
           </Button>
         </Form>
 
-        <p className="text-center mt-3 mb-0">
-          ¿No tienes cuenta?{" "}
-          <a href="/register" className="text-decoration-none fw-bold">
-            Regístrate
-          </a>
-        </p>
+        {/* ✅ En Electron no mostrar link de registro */}
+        {!isElectron && (
+          <p className="text-center mt-3 mb-0">
+            ¿No tienes cuenta?{" "}
+            <a href="/register" className="text-decoration-none fw-bold">
+              Regístrate
+            </a>
+          </p>
+        )}
       </Card>
 
       <style>{`
@@ -109,6 +118,9 @@ const Login: React.FC = () => {
           50%  { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
+        ${isElectron ? `
+          body { background: linear-gradient(135deg, #1a1a2e, #16213e) !important; }
+        ` : ""}
       `}</style>
     </div>
   );

@@ -3,15 +3,17 @@ import { Navbar, Nav, Button, Container, Dropdown } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useConfig } from "../context/ConfigContext";
+import { useIsElectron } from "../hooks/useIsElectron";
 import { FaUserCircle, FaSignOutAlt, FaBuilding, FaBars, FaUserCog } from "react-icons/fa";
 
 export default function Header() {
   const { user, logout } = useAuth();
-  const { config } = useConfig();
-  const navigate = useNavigate();
+  const { config }       = useConfig();
+  const navigate         = useNavigate();
+  const isElectron       = useIsElectron();
 
-  const [scrollY, setScrollY] = useState(0);
-  const [hidden, setHidden] = useState(false);
+  const [scrollY, setScrollY]   = useState(0);
+  const [hidden, setHidden]     = useState(false);
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
@@ -22,6 +24,9 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [scrollY]);
+
+  // ✅ En Electron ocultar header completamente si no hay sesión
+  if (isElectron && !user) return null;
 
   const getBackground = () => {
     switch (config.tema) {
@@ -81,6 +86,7 @@ export default function Header() {
           {/* Auth */}
           <div className="d-flex align-items-center gap-3">
             {!user ? (
+              // ✅ En web mostrar botones, en Electron no llega aquí (return null arriba)
               <>
                 <Button variant="outline-light" size="sm" className="px-3 premium-btn" onClick={() => navigate("/login")}>
                   Iniciar Sesión
@@ -101,26 +107,13 @@ export default function Header() {
                     <FaBuilding className="me-2" />
                     {user.email}
                   </Dropdown.Item>
-
                   <Dropdown.Divider />
-
-                  <Dropdown.Item
-                    onClick={() => navigate("/mi-cuenta")}
-                    className="fw-semibold d-flex align-items-center gap-2"
-                    style={{ color: "#c58b2a" }}
-                  >
-                    <FaUserCog />
-                    Mi Cuenta
+                  <Dropdown.Item onClick={() => navigate("/mi-cuenta")} className="fw-semibold d-flex align-items-center gap-2" style={{ color: "#c58b2a" }}>
+                    <FaUserCog /> Mi Cuenta
                   </Dropdown.Item>
-
                   <Dropdown.Divider />
-
-                  <Dropdown.Item
-                    onClick={() => { logout(); navigate("/login"); }}
-                    className="text-danger fw-semibold d-flex align-items-center gap-2"
-                  >
-                    <FaSignOutAlt />
-                    Cerrar sesión
+                  <Dropdown.Item onClick={() => { logout(); navigate("/login"); }} className="text-danger fw-semibold d-flex align-items-center gap-2">
+                    <FaSignOutAlt /> Cerrar sesión
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
@@ -148,23 +141,13 @@ export default function Header() {
         }
         .nav-premium { transition: all 0.3s ease; }
         .nav-premium:hover { text-shadow: 0 0 8px rgba(255,255,255,0.7); transform: scale(1.05); }
-        .premium-btn {
-          background: linear-gradient(145deg, #444, #222);
-          border: 1px solid #555; color: #fff; transition: all 0.3s ease;
-        }
+        .premium-btn { background: linear-gradient(145deg, #444, #222); border: 1px solid #555; color: #fff; transition: all 0.3s ease; }
         .premium-btn:hover { background: linear-gradient(145deg, #666, #333); box-shadow: 0 0 8px rgba(255,255,255,0.3); }
         .premium-btn-dark { background: linear-gradient(145deg, #eee, #ccc); border: none; color: #111; font-weight: 600; }
         .premium-btn-dark:hover { background: linear-gradient(145deg, #fff, #ddd); }
         @media (max-width: 992px) {
-          .navbar-collapse {
-            background: rgba(0,0,0,0.85); border-radius: 10px;
-            padding: 1rem; margin-top: 0.5rem;
-            animation: slideDown 0.35s ease;
-          }
-          @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to   { opacity: 1; transform: translateY(0); }
-          }
+          .navbar-collapse { background: rgba(0,0,0,0.85); border-radius: 10px; padding: 1rem; margin-top: 0.5rem; animation: slideDown 0.35s ease; }
+          @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
           .nav-premium { display: block; padding: 0.5rem 0; color: #fff !important; }
         }
       `}</style>
