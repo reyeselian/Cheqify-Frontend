@@ -46,7 +46,7 @@ export default function ForgotPassword() {
                 <form onSubmit={handleSubmit}>
                   <div style={{ marginBottom: "1rem" }}>
                     <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: "0.35rem", fontFamily: T.font }}>Correo electrónico</label>
-                    <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setError(""); }} placeholder="correo@empresa.com"
+                    <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setError(""); }}
                       style={{ width: "100%", background: "#f8fafc", border: `1.5px solid ${T.border}`, borderRadius: "11px", padding: "0.65rem 0.9rem", color: T.text, fontSize: "0.92rem", fontFamily: T.font, outline: "none", boxSizing: "border-box" }}
                       onFocus={(e) => (e.currentTarget.style.borderColor = T.gold)}
                       onBlur={(e)  => (e.currentTarget.style.borderColor = T.border)}

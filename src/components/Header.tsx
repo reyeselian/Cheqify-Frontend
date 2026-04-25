@@ -3,14 +3,36 @@ import { Navbar, Nav, Button, Container, Dropdown } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useConfig } from "../context/ConfigContext";
-import { useIsElectron } from "../hooks/useIsElectron";
 import { FaUserCircle, FaSignOutAlt, FaBuilding, FaBars, FaUserCog } from "react-icons/fa";
+
+// ── Iconos duotone SVG inline ─────────────────────────────
+const IconInicio = () => (
+  <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+    <path d="M12 3L4 9v12h5v-5h6v5h5V9L12 3z" fill="#c58b2a" opacity="0.25"/>
+    <path d="M12 3L4 9v12h5v-5h6v5h5V9L12 3z" stroke="#c58b2a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const IconCheques = () => (
+  <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+    <path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" fill="#27b6b1" opacity="0.25"/>
+    <path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" stroke="#27b6b1" strokeWidth="1.8" strokeLinecap="round"/>
+    <path d="M3 10h18M7 15h4M15 15h2" stroke="#27b6b1" strokeWidth="1.8" strokeLinecap="round"/>
+  </svg>
+);
+
+const IconReportes = () => (
+  <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+    <path d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" fill="#4ade80" opacity="0.25"/>
+    <path d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" stroke="#4ade80" strokeWidth="1.8" strokeLinecap="round"/>
+    <path d="M8 16v-4M12 16V8M16 16v-6" stroke="#4ade80" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
 
 export default function Header() {
   const { user, logout } = useAuth();
   const { config }       = useConfig();
   const navigate         = useNavigate();
-  const isElectron       = useIsElectron();
 
   const [scrollY, setScrollY]   = useState(0);
   const [hidden, setHidden]     = useState(false);
@@ -25,8 +47,8 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [scrollY]);
 
-  // ✅ En Electron ocultar header completamente si no hay sesión
-  if (isElectron && !user) return null;
+  // ✅ Ocultar header completamente si no hay sesión (web y Electron)
+  if (!user) return null;
 
   const getBackground = () => {
     switch (config.tema) {
@@ -70,14 +92,20 @@ export default function Header() {
             <FaBars />
           </Button>
 
-          {/* Nav links — solo visibles con sesión iniciada */}
+          {/* Nav links con iconos duotone */}
           <Navbar.Collapse id="basic-navbar-nav" className="justify-content-center text-center">
             <Nav className="mx-auto gap-3">
               {user && (
                 <>
-                  <Nav.Link href="/home"     style={{ color: textColor }} className="fw-semibold nav-premium">Inicio</Nav.Link>
-                  <Nav.Link href="/cheques"  style={{ color: textColor }} className="fw-semibold nav-premium">Cheques</Nav.Link>
-                  <Nav.Link href="/reportes" style={{ color: textColor }} className="fw-semibold nav-premium">Reportes</Nav.Link>
+                  <Nav.Link href="/home" className="fw-semibold nav-premium d-flex align-items-center gap-2" style={{ color: textColor }}>
+                    <IconInicio /> Inicio
+                  </Nav.Link>
+                  <Nav.Link href="/cheques" className="fw-semibold nav-premium d-flex align-items-center gap-2" style={{ color: textColor }}>
+                    <IconCheques /> Cheques
+                  </Nav.Link>
+                  <Nav.Link href="/reportes" className="fw-semibold nav-premium d-flex align-items-center gap-2" style={{ color: textColor }}>
+                    <IconReportes /> Reportes
+                  </Nav.Link>
                 </>
               )}
             </Nav>
@@ -86,7 +114,6 @@ export default function Header() {
           {/* Auth */}
           <div className="d-flex align-items-center gap-3">
             {!user ? (
-              // ✅ En web mostrar botones, en Electron no llega aquí (return null arriba)
               <>
                 <Button variant="outline-light" size="sm" className="px-3 premium-btn" onClick={() => navigate("/login")}>
                   Iniciar Sesión
@@ -148,7 +175,7 @@ export default function Header() {
         @media (max-width: 992px) {
           .navbar-collapse { background: rgba(0,0,0,0.85); border-radius: 10px; padding: 1rem; margin-top: 0.5rem; animation: slideDown 0.35s ease; }
           @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-          .nav-premium { display: block; padding: 0.5rem 0; color: #fff !important; }
+          .nav-premium { display: flex; padding: 0.5rem 0; color: #fff !important; justify-content: center; }
         }
       `}</style>
     </>

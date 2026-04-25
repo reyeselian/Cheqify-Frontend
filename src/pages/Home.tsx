@@ -239,8 +239,8 @@ export default function Home() {
         {/* 🎨 BOTÓN METÁLICO PREMIUM — más compacto */}
         <TrialGuard showDisabled>
           <Button
-            size="sm"
-            className="fw-bold text-dark px-4 py-2 border-0"
+            size="lg"
+            className="fw-bold text-dark px-5 py-3 border-0"
             style={{
               background: "linear-gradient(145deg, #b3b3b3, #d9d9d9, #a6a6a6)",
               borderRadius: "12px",
@@ -268,7 +268,7 @@ export default function Home() {
       </div>
 
       {/* 🔹 DASHBOARD — tarjetas más compactas */}
-      <div className="d-flex flex-wrap justify-content-between gap-2 mb-2">
+      <div className="d-flex flex-wrap justify-content-between gap-3 mb-3">
         {[
           { key: "total", label: "Total", count: cheques.length, amount: montoTotal, color: "primary" },
           { key: "pendientes", label: "Pendientes", count: pendientes.length, amount: montoPendiente, color: "warning" },
@@ -292,10 +292,10 @@ export default function Home() {
               transition: "all 0.3s ease",
             }}
           >
-            <Card.Body className="py-2 px-2">
-              <h6 className="text-muted mb-1" style={{ fontSize: "0.8rem" }}>{item.label}</h6>
-              <h4 className={`fw-bold text-${item.color} mb-0`}>{item.count}</h4>
-              <small className="text-muted" style={{ fontSize: "0.75rem" }}>{formatCurrency(item.amount)}</small>
+            <Card.Body className="py-3 px-2">
+              <h6 className="text-muted mb-1" style={{ fontSize: "0.9rem" }}>{item.label}</h6>
+              <h3 className={`fw-bold text-${item.color} mb-0`}>{item.count}</h3>
+              <small className="text-muted" style={{ fontSize: "0.82rem" }}>{formatCurrency(item.amount)}</small>
             </Card.Body>
           </Card>
         ))}

@@ -28,16 +28,8 @@ const Login: React.FC = () => {
     <div
       className="d-flex align-items-center justify-content-center bg-light"
       style={{
-        height: "100vh",
-        overflow: "hidden",
-        // En web el header fijo ocupa 70px, compensamos con margin negativo
-        // En Electron no hay header, se centra solo
-        marginTop: isElectron ? "0" : "-70px",
         position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
+        top: 0, left: 0, right: 0, bottom: 0,
       }}
     >
       <Card
@@ -61,7 +53,6 @@ const Login: React.FC = () => {
             <Form.Label>Correo electrónico</Form.Label>
             <Form.Control
               type="email"
-              placeholder="correo@empresa.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -72,7 +63,6 @@ const Login: React.FC = () => {
             <Form.Label>Contraseña</Form.Label>
             <Form.Control
               type="password"
-              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -129,7 +119,6 @@ const Login: React.FC = () => {
           50%  { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
-
       `}</style>
     </div>
   );

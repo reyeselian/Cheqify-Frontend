@@ -10,7 +10,7 @@ import {
   Spinner,
   Container,
 } from "react-bootstrap";
-import { FaFileExcel, FaFilePdf, FaChartPie } from "react-icons/fa";
+import { FaFileExcel, FaFilePdf } from "react-icons/fa";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -228,7 +228,7 @@ export default function Reportes() {
   return (
     <Container className="p-3">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h3 className="fw-bold">📊 Reportes de Cheques</h3>
+        <h3 className="fw-bold"> Reportes de Cheques</h3>
         <div className="d-flex gap-2">
           <Button variant="success" className="fw-bold d-flex align-items-center gap-2" onClick={exportToExcel}>
             <FaFileExcel /> Exportar Excel
@@ -273,7 +273,7 @@ export default function Reportes() {
 
           {/* GAUGE + GRÁFICOS */}
           <h5 className="fw-bold mb-3">
-            <FaChartPie className="me-2" /> Distribución de Cheques
+            Distribución de Cheques
           </h5>
 
           <Row className="g-3 mb-3">

@@ -5,8 +5,7 @@ import {
 } from "react-bootstrap";
 import { api } from "../services/api";
 import {
-  FaSyncAlt, FaMoneyBillWave, FaUndoAlt,
-  FaExclamationCircle, FaSearch, FaEllipsisV, FaCalendarAlt,
+  FaSyncAlt, FaSearch, FaEllipsisV, FaCalendarAlt,
 } from "react-icons/fa";
 import { useConfig } from "../context/ConfigContext";
 import { toast } from "react-toastify";
@@ -21,6 +20,7 @@ export default function Cheques() {
   const [loading, setLoading]                 = useState(true);
   const [search, setSearch]                   = useState("");
   const [estadoFiltro, setEstadoFiltro]       = useState("todos");
+  const [activeFilter, setActiveFilter]       = useState("todos");
 
   const [selectedCheque, setSelectedCheque]     = useState<any>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -59,20 +59,17 @@ export default function Cheques() {
     setFilteredCheques(result);
   }, [search, estadoFiltro, cheques]);
 
-  // Obtener cheques pendientes por fecha de depósito
   const getFechaDeposito = (cheque: any): string => {
     if (!cheque.fechaDeposito) return "";
-    return cheque.fechaDeposito.slice(0, 10); // YYYY-MM-DD
+    return cheque.fechaDeposito.slice(0, 10);
   };
 
-  // Fechas con cheques pendientes
   const fechasConCheques = new Set(
     cheques
       .filter((c) => c.estado === "pendiente" && c.fechaDeposito)
       .map(getFechaDeposito)
   );
 
-  // Al hacer click en un día del calendario
   const handleDayClick = (date: Date) => {
     setCalendarDate(date);
     const yyyy = date.getFullYear();
@@ -85,7 +82,6 @@ export default function Cheques() {
     setChequesDelDia(del);
   };
 
-  // Marcar días con cheques en el calendario
   const tileContent = ({ date, view }: { date: Date; view: string }) => {
     if (view !== "month") return null;
     const yyyy = date.getFullYear();
@@ -203,7 +199,7 @@ export default function Cheques() {
       {/* HEADER */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <h3 className="fw-bold" style={{ background: "linear-gradient(135deg, #222, #555)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-          📋 {config.idioma === "en" ? "Check Management" : "Gestión de Cheques"}
+           {config.idioma === "en" ? "Check Management" : "Gestión de Cheques"}
         </h3>
         <div className="d-flex gap-2">
           <Button
@@ -240,20 +236,34 @@ export default function Cheques() {
         </Form.Select>
       </InputGroup>
 
-      {/* RESUMEN */}
-      <div className="d-flex flex-wrap justify-content-between gap-3 mb-4">
+      {/* RESUMEN — mismo diseño que Home */}
+      <div className="d-flex flex-wrap justify-content-between gap-2 mb-4">
         {[
-          { label: config.idioma === "en" ? "Pending" : "Pendientes", value: totalPendientes.length, monto: sum(totalPendientes), icon: <FaExclamationCircle size={22} />, color: "warning" },
-          { label: config.idioma === "en" ? "Paid"    : "Cobrados",   value: totalCobrados.length,   monto: sum(totalCobrados),   icon: <FaMoneyBillWave size={22} />,    color: "success" },
-          { label: config.idioma === "en" ? "Returned": "Devueltos",  value: totalDevueltos.length,  monto: sum(totalDevueltos),  icon: <FaUndoAlt size={22} />,          color: "secondary" },
-        ].map((item, i) => (
-          <Card key={i} className="text-center border-0 shadow-sm flex-grow-1"
-            style={{ minWidth: "200px", background: `linear-gradient(145deg, var(--bs-${item.color}) 20%, var(--color-principal))`, color: item.color === "warning" ? "#000" : "#fff", borderRadius: "12px" }}>
-            <Card.Body>
-              <div className="d-flex justify-content-center mb-2">{item.icon}</div>
-              <h5 className="fw-bold mb-0">{item.label}</h5>
-              <p className="mb-1">{item.value} cheques</p>
-              <small className="fw-semibold">{formatCurrency(item.monto)}</small>
+          { key: "pendiente", label: config.idioma === "en" ? "Pending"  : "Pendientes", count: totalPendientes.length, amount: sum(totalPendientes), color: "warning"   },
+          { key: "cobrado",   label: config.idioma === "en" ? "Paid"     : "Cobrados",   count: totalCobrados.length,   amount: sum(totalCobrados),   color: "success"   },
+          { key: "devuelto",  label: config.idioma === "en" ? "Returned" : "Devueltos",  count: totalDevueltos.length,  amount: sum(totalDevueltos),  color: "secondary" },
+        ].map((item, idx) => (
+          <Card
+            key={idx}
+            onClick={() => {
+              const newFilter = activeFilter === item.key ? "todos" : item.key;
+              setActiveFilter(newFilter);
+              setEstadoFiltro(newFilter);
+            }}
+            className={`text-center border-0 rounded-3 shadow-sm flex-grow-1 ${activeFilter === item.key ? `border-3 border-${item.color}` : ""}`}
+            style={{
+              minWidth: "130px",
+              cursor: "pointer",
+              background: activeFilter === item.key
+                ? `linear-gradient(145deg, var(--bs-${item.color}) 10%, #fff)`
+                : "linear-gradient(145deg, #f8f9fa, #ffffff)",
+              transition: "all 0.3s ease",
+            }}
+          >
+            <Card.Body className="py-3 px-2">
+              <h6 className="text-muted mb-1" style={{ fontSize: "0.9rem" }}>{item.label}</h6>
+              <h3 className={`fw-bold text-${item.color} mb-0`}>{item.count}</h3>
+              <small className="text-muted" style={{ fontSize: "0.82rem" }}>{formatCurrency(item.amount)}</small>
             </Card.Body>
           </Card>
         ))}
@@ -335,7 +345,6 @@ export default function Cheques() {
         </Modal.Header>
         <Modal.Body style={{ background: "#f8fafc" }}>
           <div className="d-flex flex-wrap gap-3">
-            {/* Calendario */}
             <div style={{ flex: "1 1 320px" }}>
               <style>{`
                 .react-calendar { width: 100%; border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); font-family: inherit; }
@@ -358,20 +367,15 @@ export default function Cheques() {
                 <span style={{ background: "#dc3545", color: "#fff", borderRadius: "50%", width: "18px", height: "18px", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "0.65rem", fontWeight: 700 }}>N</span> = cantidad
               </div>
             </div>
-
-            {/* Panel lateral de cheques del día */}
             <div style={{ flex: "1 1 260px", minWidth: "220px" }}>
               <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "#1a1d23", marginBottom: "0.75rem" }}>
                 {chequesDelDia.length > 0
                   ? `📅 ${calendarDate.toLocaleDateString("es-DO", { weekday: "long", day: "2-digit", month: "long" })}`
                   : "Selecciona un día del calendario"}
               </div>
-
               {chequesDelDia.length === 0 ? (
                 <div style={{ color: "#94a3b8", fontSize: "0.85rem", textAlign: "center", marginTop: "2rem" }}>
-                  {fechasConCheques.size === 0
-                    ? "No hay cheques pendientes."
-                    : "No hay cheques para depositar este día."}
+                  {fechasConCheques.size === 0 ? "No hay cheques pendientes." : "No hay cheques para depositar este día."}
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
