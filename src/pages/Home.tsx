@@ -232,16 +232,15 @@ export default function Home() {
   };
 
   return (
-    <div className="p-3">
-      {/* HEADER */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        {/* <h3 className="fw-bold">{user?.empresa || "Nombre de la Empresa"}</h3> */}
-
-        {/* 🎨 BOTÓN METÁLICO PREMIUM */}
+    // ✅ Sin scroll — todo el contenido cabe en pantalla
+    <div className="px-3 pt-1 pb-2" style={{ overflow: "hidden", height: "calc(100vh - 70px)" }}>
+      {/* HEADER — menos margen arriba */}
+      <div className="d-flex justify-content-between align-items-center mb-2">
+        {/* 🎨 BOTÓN METÁLICO PREMIUM — más compacto */}
         <TrialGuard showDisabled>
           <Button
-            size="lg"
-            className="fw-bold text-dark px-5 py-3 border-0"
+            size="sm"
+            className="fw-bold text-dark px-4 py-2 border-0"
             style={{
               background: "linear-gradient(145deg, #b3b3b3, #d9d9d9, #a6a6a6)",
               borderRadius: "12px",
@@ -268,8 +267,8 @@ export default function Home() {
         </TrialGuard>
       </div>
 
-      {/* 🔹 DASHBOARD */}
-      <div className="d-flex flex-wrap justify-content-between gap-3 mb-4">
+      {/* 🔹 DASHBOARD — tarjetas más compactas */}
+      <div className="d-flex flex-wrap justify-content-between gap-2 mb-2">
         {[
           { key: "total", label: "Total", count: cheques.length, amount: montoTotal, color: "primary" },
           { key: "pendientes", label: "Pendientes", count: pendientes.length, amount: montoPendiente, color: "warning" },
@@ -280,11 +279,11 @@ export default function Home() {
           <Card
             key={idx}
             onClick={() => handleFilter(item.key)}
-            className={`text-center border-0 rounded-4 shadow-sm flex-grow-1 ${
+            className={`text-center border-0 rounded-3 shadow-sm flex-grow-1 ${
               activeFilter === item.key ? `border-3 border-${item.color}` : ""
             }`}
             style={{
-              minWidth: "160px",
+              minWidth: "130px",
               cursor: "pointer",
               background:
                 activeFilter === item.key
@@ -293,10 +292,10 @@ export default function Home() {
               transition: "all 0.3s ease",
             }}
           >
-            <Card.Body className="p-3">
-              <h6 className="text-muted mb-1">{item.label}</h6>
-              <h4 className={`fw-bold text-${item.color} mb-0`}>{item.count}</h4>
-              <small className="text-muted">{formatCurrency(item.amount)}</small>
+            <Card.Body className="py-2 px-2">
+              <h6 className="text-muted mb-0" style={{ fontSize: "0.72rem" }}>{item.label}</h6>
+              <h5 className={`fw-bold text-${item.color} mb-0`}>{item.count}</h5>
+              <small className="text-muted" style={{ fontSize: "0.68rem" }}>{formatCurrency(item.amount)}</small>
             </Card.Body>
           </Card>
         ))}
@@ -304,16 +303,16 @@ export default function Home() {
 
       {/* 🔹 TABLA DE CHEQUES */}
       {loading ? (
-        <div className="text-center mt-5">
+        <div className="text-center mt-3">
           <Spinner animation="border" variant="dark" />
         </div>
       ) : filteredCheques.length === 0 ? (
-        <p className="text-center text-muted mt-5">
+        <p className="text-center text-muted mt-3">
           {showDeleted ? "No hay cheques eliminados." : "No hay cheques registrados aún."}
         </p>
       ) : (
         <div className="table-responsive shadow-sm rounded-4 border bg-white p-2">
-          <Table hover className="align-middle mb-0">
+          <Table hover className="align-middle mb-0" size="sm">
             <thead className="bg-dark text-white">
               <tr>
                 <th style={{ width: "50px" }}>#</th>
