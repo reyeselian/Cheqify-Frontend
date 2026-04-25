@@ -27,7 +27,13 @@ const Login: React.FC = () => {
   return (
     <div
       className="d-flex align-items-center justify-content-center bg-light"
-      style={{ height: "100vh", overflow: "hidden" }}
+      style={{
+        height: "100vh",
+        overflow: "hidden",
+        // ✅ En Electron no hay header, centrar perfectamente
+        // En web hay header de 70px, compensar
+        paddingTop: isElectron ? "0" : "70px",
+      }}
     >
       <Card
         className="p-4 shadow-lg text-center"
@@ -118,9 +124,7 @@ const Login: React.FC = () => {
           50%  { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
-        ${isElectron ? `
-          body { background: linear-gradient(135deg, #1a1a2e, #16213e) !important; }
-        ` : ""}
+
       `}</style>
     </div>
   );

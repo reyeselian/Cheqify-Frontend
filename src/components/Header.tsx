@@ -75,7 +75,7 @@ export default function Header() {
             <Nav className="mx-auto gap-3">
               {user && (
                 <>
-                  <Nav.Link href="/"         style={{ color: textColor }} className="fw-semibold nav-premium">Inicio</Nav.Link>
+                  <Nav.Link href="/home"     style={{ color: textColor }} className="fw-semibold nav-premium">Inicio</Nav.Link>
                   <Nav.Link href="/cheques"  style={{ color: textColor }} className="fw-semibold nav-premium">Cheques</Nav.Link>
                   <Nav.Link href="/reportes" style={{ color: textColor }} className="fw-semibold nav-premium">Reportes</Nav.Link>
                 </>
