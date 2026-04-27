@@ -33,13 +33,13 @@ const Login: React.FC = () => {
       background: "#f0f2f5",
     }}>
       <div style={{
-        display: "flex", width: "min(820px, 96vw)", height: "min(480px, 90vh)",
+        display: "flex", width: "min(820px, 96vw)", height: "min(480px, 92vh)", minHeight: "420px",
         borderRadius: "20px", overflow: "hidden",
         boxShadow: "0 24px 64px rgba(0,0,0,0.14)",
       }}>
 
-        {/* ── Panel izquierdo ── */}
-        <div style={{
+        {/* ── Panel izquierdo — oculto en móvil ── */}
+        <div className="d-none d-md-flex" style={{
           width: "42%", background: "linear-gradient(160deg,#0f4c5c,#27b6b1)",
           display: "flex", flexDirection: "column", alignItems: "center",
           padding: "clamp(24px,4vw,32px) clamp(20px,3vw,28px)",
@@ -63,7 +63,7 @@ const Login: React.FC = () => {
           {/* Frase */}
           <div style={{ position:"relative", width:"100%", marginBottom:"12px" }}>
             <p style={{ fontSize:"12px", color:"rgba(255,255,255,0.65)", fontStyle:"italic", lineHeight:1.6, margin:0 }}>
-              "Controla tus cheques<br/>con precisión"
+              "Controla tus finanzas<br/>con precisión"
             </p>
           </div>
 
@@ -110,10 +110,16 @@ const Login: React.FC = () => {
 
         {/* ── Panel derecho ── */}
         <div style={{
-          flex: 1, background: "#fff",
+          flex: 1, background: "#fff", minWidth: 0, width: "100%",
           display: "flex", flexDirection: "column", justifyContent: "center",
           padding: "clamp(24px,4vw,44px) clamp(20px,4vw,40px)",
         }}>
+          {/* Logo visible solo en móvil */}
+          <div className="d-md-none" style={{ textAlign:"center", marginBottom:"20px" }}>
+            <div className="cheqify-logo-text" style={{ fontSize:"2.2rem", fontWeight:800, letterSpacing:"0.5px", display:"inline-block" }}>Cheqify</div>
+            <div style={{ fontSize:"12px", color:"#27b6b1", fontWeight:600, marginTop:"2px" }}>Gestión de Cheques</div>
+          </div>
+
           <div style={{ marginBottom:"24px" }}>
             <h2 style={{ fontSize:"clamp(18px,2.5vw,24px)", fontWeight:700, color:"#1a1d23", margin:"0 0 6px" }}>Bienvenido</h2>
             <p style={{ fontSize:"13px", color:"#94a3b8", margin:0 }}>Accede a tu panel de gestión de cheques</p>
@@ -133,7 +139,7 @@ const Login: React.FC = () => {
                 <path d="M22 6l-10 7L2 6" stroke="#94a3b8" strokeWidth="1.8"/>
               </svg>
               <input
-                type="email" value={email}  required
+                type="email" value={email} placeholder="correo@empresa.com" required
                 onChange={(e) => { setEmail(e.target.value); setMessage(""); }}
                 style={{ flex:1, border:"none", outline:"none", background:"transparent", fontSize:"14px", color:"#1a1d23", fontFamily:"inherit" }}
               />
@@ -148,7 +154,7 @@ const Login: React.FC = () => {
                 <path d="M7 11V7a5 5 0 0110 0v4" stroke="#94a3b8" strokeWidth="1.8"/>
               </svg>
               <input
-                type={showPass ? "text" : "password"} value={password} required
+                type={showPass ? "text" : "password"} value={password} placeholder="••••••••" required
                 onChange={(e) => { setPassword(e.target.value); setMessage(""); }}
                 style={{ flex:1, border:"none", outline:"none", background:"transparent", fontSize:"14px", color:"#1a1d23", fontFamily:"inherit" }}
               />
